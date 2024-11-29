@@ -22,12 +22,10 @@ app.post("/hooks/catch/:userId/:zapId", async (req, res) => {
             data: {
                 zapId: zapId,
             }
-        });;
-
-       
+        });
 
 
-        
+
 
     res.json({
         message: "Webhook received"
