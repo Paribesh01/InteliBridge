@@ -45,7 +45,6 @@ const Login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.Login = Login;
 const Signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("hit");
     const { email, name, password } = req.body;
     try {
         const existingUser = yield db_1.default.user.findUnique({

@@ -18,6 +18,6 @@ export const validateSchema = (schema: any) => {
       } else {
         next(error);
       }
-    }
+    } 
   };
 };
