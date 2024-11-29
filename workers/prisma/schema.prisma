@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  zaps      Zap[]
+}
+
+model Zap {
+  id          String      @id @default(uuid())
+  name        String
+  description String?
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  trigger     Trigger?
+  workflows   Workflow[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  WebhookZap WebhookZap[]
+}
+
+model Trigger {
+  id String @id @default(uuid())
+  triggerId String
+  zapId       String @unique
+  zap         Zap      @relation(fields: [zapId], references: [id])
+  type AvailableTrigger @relation(fields: [triggerId], references: [id])
+
+}
+
+model Workflow {
+  id          String   @id @default(uuid())
+  workflowId String
+  zapId       String
+  zap         Zap      @relation(fields: [zapId], references: [id])
+  index       Int @default(0)
+  type AvailableWorkflow @relation(fields: [workflowId],references: [id])
+
+
+}
+
+
+model AvailableWorkflow {
+  id       String @id @default(uuid())
+  name     String
+  image    String
+  workflow  Workflow[]
+}
+
+model AvailableTrigger {
+  id       String @id @default(uuid())
+  name     String 
+  image    String
+  triggers Trigger[]
+}
+
+
+model WebhookZap {
+  id String @id @default(uuid())
+  zapId String
+  zap          Zap @relation(fields: [zapId], references: [id])
+}

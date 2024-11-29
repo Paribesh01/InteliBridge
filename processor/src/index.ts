@@ -14,7 +14,7 @@ async  function  main() {
             take: 10
         })
        zaps.map(async(zap)=>{
-        await redisClient.rPush("myQueue", JSON.stringify(zap));
+        await redisClient.rPush("zap", JSON.stringify(zap.id));
         await client.webhookZap.delete({where:{
             id:zap.id
         }})
