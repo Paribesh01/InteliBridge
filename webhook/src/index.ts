@@ -15,16 +15,18 @@ const client  = new PrismaClient()
 app.post("/hooks/catch/:userId/:zapId", async (req, res) => {
     const userId = req.params.userId;
     const zapId = req.params.zapId;
-    const body = req.body;
 
+        const user = await client.user.findUnique({where:{id:userId}})
+        if(user){
 
-        const run = await client.webhookZap.create({
-            data: {
-                zapId: zapId,
-            }
-        });
-
-
+            const run = await client.webhookZap.create({
+                data: {
+                    zapId: zapId,
+                }
+            });
+        }else {
+            res.send("User not found").status(401)
+        }
 
 
     res.json({
