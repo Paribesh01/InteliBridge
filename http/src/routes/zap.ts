@@ -11,4 +11,8 @@ ZapRouter.get("/",authenticateToken(),GetAllZap)
 ZapRouter.get("/:id",authenticateToken(),GetOneZap)
 
 
+
+
+
+
 export default ZapRouter;

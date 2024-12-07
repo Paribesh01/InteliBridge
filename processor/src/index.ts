@@ -1,11 +1,11 @@
 import { PrismaClient } from "@prisma/client";
-import redis from "redis"
+import {createClient} from "redis"
 
 
 const client= new PrismaClient()
 
 async  function  main() {
-    const redisClient  = redis.createClient()
+    const redisClient  = createClient()
     redisClient.connect().then(() => console.log("Connected to Redis"));
     
     while(1){
@@ -13,8 +13,11 @@ async  function  main() {
             where :{},
             take: 10
         })
+        console.log("webhook found")
+        console.log(zaps)
        zaps.map(async(zap)=>{
         await redisClient.rPush("zap", JSON.stringify(zap.id));
+        console.log("sent by the redis", zap)
         await client.webhookZap.delete({where:{
             id:zap.id
         }})

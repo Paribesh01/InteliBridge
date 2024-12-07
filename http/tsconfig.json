@@ -1,5 +1,9 @@
 {
+  "exclude": [
+    "prisma/seed.ts"
+  ],
   "compilerOptions": {
+    "typeRoots": ["./@types", "./node_modules/@types"], // Add the custom @types directory here
     /* Visit https://aka.ms/tsconfig to read more about this file */
 
     /* Projects */
@@ -107,5 +111,7 @@
     /* Completeness */
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
     "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
-  }
+  },
+  "include": ["src/**/*", "@types/**/*"] // Ensure TypeScript processes the @types folder
+
 }

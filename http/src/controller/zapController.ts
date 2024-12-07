@@ -68,7 +68,17 @@ export const createZap = async (req: Request, res: Response) => {
       },
     });
 
-    res.status(201).json(zap);
+    console.log(zap)
+
+    if(zap){
+
+      
+      res.status(201).json(zap);
+    }else{
+
+      
+      res.send(500).json({"error":"this is a error"})
+    }
   } catch (e) {
     console.error(e);
     res.status(500).send("Something went wrong");

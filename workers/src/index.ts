@@ -1,8 +1,9 @@
 import { PrismaClient } from "@prisma/client";
-import redis from "redis"
+import {createClient} from "redis"
+import { SendMail } from "./email";
 
 
-const redisClient = redis.createClient();
+const redisClient = createClient();
 
 
 const client  = new PrismaClient();
@@ -14,11 +15,11 @@ const client  = new PrismaClient();
     console.log("Worker started. Waiting for tasks...");
   
     while (true) {
-        const task = await redisClient.blPop("myQueue", 0); 
-        const id = JSON.parse(task.id);
+        const task:any = await redisClient.blPop("zap", 0); 
+        console.log("task is in the worker boy", task)
   
         const zapDetails = await  client.webhookZap.findUnique({where:{
-            id
+            id:task.element
         },
         select:{
             zap:{
@@ -32,6 +33,10 @@ const client  = new PrismaClient();
             }
         }
     })
+
+    SendMail("nepalparibesh01@gmail.com","Hey","this is a test message ")
+
+
     console.log("this is the Zap Details")
     console.log(zapDetails)
 
