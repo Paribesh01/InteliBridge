@@ -64,13 +64,12 @@ export default function BridgeList() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
-                  <Switch id="airplane-mode" />
 
-                    {/* <Switch
+                    <Switch
                       checked={bridge.active}
                       onCheckedChange={() => toggleBridge(bridge.id)}
                       aria-label={`Toggle ${bridge.name}`}
-                    /> */}
+                    />
                     <span className="text-sm font-medium text-gray-300">
                       {bridge.active ? 'Active' : 'Inactive'}
                     </span>

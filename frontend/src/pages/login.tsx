@@ -1,18 +1,24 @@
-
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import useLogin from "@/hooks/useLogin";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const { data, loading, login } = useLogin();
+  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log('Login attempted with:', email, password)
-  }
+    e.preventDefault();
+    login(email, password);
+    if (data && data.success == true) {
+      navigate("/");
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col  items-center justify-center bg-gradient-to-br from-gray-900 to-black overflow-hidden">
@@ -36,11 +42,18 @@ export default function LoginPage() {
         transition={{ duration: 0.5, delay: 0.2 }}
         className="z-10 w-full max-w-md"
       >
-        <form onSubmit={handleSubmit} className="bg-gray-800 bg-opacity-50 p-8 rounded-2xl shadow-lg backdrop-blur-lg">
-          <h2 className="text-3xl font-bold text-center text-white mb-6">Login</h2>
+        <form
+          onSubmit={handleSubmit}
+          className="bg-gray-800 bg-opacity-50 p-8 rounded-2xl shadow-lg backdrop-blur-lg"
+        >
+          <h2 className="text-3xl font-bold text-center text-white mb-6">
+            Login
+          </h2>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="email" className="text-white">Email</Label>
+              <Label htmlFor="email" className="text-white">
+                Email
+              </Label>
               <Input
                 id="email"
                 type="email"
@@ -52,7 +65,9 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <Label htmlFor="password" className="text-white">Password</Label>
+              <Label htmlFor="password" className="text-white">
+                Password
+              </Label>
               <Input
                 id="password"
                 type="password"
@@ -63,17 +78,22 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full bg-blue-600  rounded-lg hover:bg-blue-700 text-white">
-              Log In
+            <Button
+              type="submit"
+              className="w-full bg-blue-600  rounded-lg hover:bg-blue-700 text-white"
+            >
+              {loading ? "loading...." : "Log In"}
             </Button>
           </div>
           <div className="mt-4 text-center">
-            <a href="#" className="text-sm text-blue-300 hover:underline">Forgot password?</a>
+            <a href="#" className="text-sm text-blue-300 hover:underline">
+              Forgot password?
+            </a>
           </div>
         </form>
       </motion.div>
     </div>
-  )
+  );
 }
 
 export function MovingLight() {
@@ -82,17 +102,16 @@ export function MovingLight() {
       className="absolute w-full h-full opacity-30"
       animate={{
         background: [
-          'radial-gradient(circle, rgba(59,130,246,0.8) 0%, rgba(59,130,246,0) 70%)',
-          'radial-gradient(circle, rgba(236,72,153,0.8) 0%, rgba(236,72,153,0) 70%)',
-          'radial-gradient(circle, rgba(34,197,94,0.8) 0%, rgba(34,197,94,0) 70%)',
+          "radial-gradient(circle, rgba(59,130,246,0.8) 0%, rgba(59,130,246,0) 70%)",
+          "radial-gradient(circle, rgba(236,72,153,0.8) 0%, rgba(236,72,153,0) 70%)",
+          "radial-gradient(circle, rgba(34,197,94,0.8) 0%, rgba(34,197,94,0) 70%)",
         ],
       }}
       transition={{
         duration: 10,
         repeat: Infinity,
-        repeatType: 'reverse',
+        repeatType: "reverse",
       }}
     />
-  )
+  );
 }
-

@@ -1,27 +1,22 @@
-
 import { BrowserRouter, Routes, Route } from "react-router";
 import LoginPage from "./pages/login";
 import SignupPage from "./pages/signup";
 import Home from "./pages/home";
+import New from "./pages/new";
 
 function App() {
-
   return (
     <>
-    <BrowserRouter>
-    
+      <BrowserRouter>
         <Routes>
-
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/new" element={<New />}></Route>
         </Routes>
-
-    </BrowserRouter>
-     
+      </BrowserRouter>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
