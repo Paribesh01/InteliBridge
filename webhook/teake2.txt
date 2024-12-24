@@ -1,0 +1,355 @@
+import express, { Request, Response, urlencoded } from "express";
+import cors from "cors";
+import axios from "axios";
+import { PrismaClient } from "@prisma/client";
+import dotenv from "dotenv";
+import crypto from "crypto";
+
+interface GitHubUser {
+    id: number;
+    access_token: string;
+    username: string;
+}
+
+const app = express();
+dotenv.config();
+
+
+app.use(cors());
+app.use(express.json());
+const prisma = new PrismaClient();
+
+let users: GitHubUser | null = null;
+
+
+const SmeeClient = require('smee-client')
+
+const smee = new SmeeClient({
+    source: 'https://smee.io/H7LD3luuaCa1KGP',
+    target: 'http://localhost:3001/webhooks/github',
+    logger: console
+})
+
+const events = smee.start()
+
+
+app.get('/auth/login', async (req: Request, res: Response): Promise<any> => {
+    const clientId = process.env.GITHUB_CLIENT_ID;
+    const redirectUri = process.env.REDIRECT_URI || 'http://localhost:3001/auth/callback';
+
+    const scope = 'repo,write:repo_hook,workflow,notifications,notifications,admin:repo_hook,admin:org_hook';
+
+    if (!clientId) {
+        return res.status(500).json({ error: 'GitHub client ID not configured' });
+    }
+
+    const url = encodeURI(`https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`);
+
+    res.redirect(url);
+});
+
+app.get('/auth/callback', async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { code } = req.query;
+        const clientId = process.env.GITHUB_CLIENT_ID;
+        const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+
+        if (!code || !clientId || !clientSecret) {
+            return res.status(400).json({ error: 'Missing required parameters' });
+        }
+
+        const response = await axios.post('https://github.com/login/oauth/access_token', {
+            client_id: clientId,
+            client_secret: clientSecret,
+            code,
+        }, {
+            headers: {
+                Accept: 'application/json',
+            },
+        });
+
+        const { access_token } = response.data;
+
+
+        const userResponse = await axios.get('https://api.github.com/user', {
+            headers: {
+                Authorization: `token ${access_token}`,
+            },
+        });
+
+        console.log("New USer Login ADded", userResponse.data);
+
+
+        // await prisma.user.upsert({
+        //     where: { githubId: userResponse.data.id },
+        //     update: { accessToken: access_token },
+        //     create: {
+        //         githubId: userResponse.data.id,
+        //         accessToken: access_token,
+        //         username: userResponse.data.login,
+        //     },
+        // });
+
+        users = {
+            id: userResponse.data.id,
+            access_token,
+            username: userResponse.data.login,
+        };
+
+        // can be redirected to frontend from here 
+
+        res.json({ success: true, token: access_token, user: users });
+
+
+    } catch (error) {
+        console.error('OAuth error:', error);
+        res.status(500).json({ error: 'Authentication failed' });
+    }
+});
+
+app.post('/api/webhooks/create', async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { repository, owner } = req.body;
+
+        const authorization = req.headers.authorization;
+
+        if (!authorization || !authorization.startsWith('Bearer ')) {
+            return res.status(401).json({ error: 'Missing or invalid authorization header' });
+        }
+
+        const accessToken = authorization.split(' ')[1];
+
+        if (!repository || !owner || !accessToken) {
+            return res.status(400).json({ error: 'Missing required parameters' });
+        }
+
+        const webhook = await createWebhook(repository, owner, accessToken);
+        res.json({ success: true, webhook });
+    } catch (error) {
+        console.error('Webhook creation error:', error);
+        res.status(500).json({ error: 'Failed to create webhook' });
+    }
+});
+
+
+
+async function createWebhook(repo: string, owner: string, token: string) {
+    const webhookUrl = 'https://smee.io/H7LD3luuaCa1KGP';
+
+    const url = `https://api.github.com/repos/${owner}/${repo}/hooks`;
+
+    const response = await axios.post(
+        url,
+        {
+            name: 'web',
+            active: true,
+            events: ['push', 'pull_request'],
+            config: {
+                url: webhookUrl,
+                content_type: 'json',
+                insecure_ssl: '0',
+            },
+        },
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: 'application/vnd.github+json',
+                'X-GitHub-Api-Version': '2022-11-28',
+            },
+        }
+    );
+
+    return response.data;
+}
+
+app.post("/token/check", async (req: Request, res: Response): Promise<any> => {
+
+    console.log("Req Headers", req.headers);    
+
+    const authorization = req.headers.authorization;
+    
+    if (!authorization || !authorization.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Missing or invalid authorization header' });
+    }
+    const accessToken = authorization.split(' ')[1];
+
+    const scopeCheck = await axios.get('https://api.github.com/user', {
+        headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Accept': 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28'
+        }
+    });
+    console.log('Token scopes:', scopeCheck.headers['x-oauth-scopes']);
+    res.json({ scopes: scopeCheck.headers['x-oauth-scopes'] });
+}
+)
+
+
+
+app.post('/webhooks/github', async (req: Request, res: Response): Promise<any> => {
+    try {
+        const signature = req.headers['x-hub-signature'] as string;
+        const event = req.headers['x-github-event'] as string;
+        const payload = req.body;
+
+        // Verify webhook signature
+        if (!verifyWebhookSignature(signature, payload)) {
+            return res.status(403).send('Invalid signature');
+        }
+
+        switch (event) {
+            case 'pull_request':
+                await handlePullRequestEvent(payload);
+                break;
+            case 'repository':
+                await handleRepositoryEvent(payload);
+                break;
+            default:
+                console.log(`Unhandled event type: ${event}`);
+        }
+
+        res.status(200).send('Event processed');
+    } catch (error) {
+        console.error('Webhook processing error:', error);
+        res.status(500).send('Error processing webhook');
+    }
+});
+
+function verifyWebhookSignature(signature: string, payload: any): boolean {
+    if (!signature || !process.env.GITHUB_WEBHOOK_SECRET) {
+        return false;
+    }
+
+    const hmac = crypto.createHmac('sha1', process.env.GITHUB_WEBHOOK_SECRET);
+    const digest = 'sha1=' + hmac.update(JSON.stringify(payload)).digest('hex');
+    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(digest));
+}
+
+async function handlePullRequestEvent(payload: any) {
+    const { action, pull_request, repository } = payload;
+
+    if (action === 'opened') {
+        // const user = await prisma.user.findFirst({
+        //     where: { username: repository.owner.login }
+        // });
+
+        const user = users;
+
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        await postComment(
+            repository.name,
+            repository.owner.login,
+            pull_request.number,
+            user.access_token,
+            generatePRComment(pull_request)
+        );
+    }
+}
+
+async function handleRepositoryEvent(payload: any) {
+    // Handle repository events (e.g., created, deleted, etc.)
+    console.log('Repository event received:', payload.action);
+}
+
+async function postComment(repo: string, owner: string, prNumber: number, token: string, comment: string) {
+    const url = `https://api.github.com/repos/${owner}/${repo}/issues/${prNumber}/comments`;
+
+    return axios.post(
+        url,
+        { body: comment },
+        {
+            headers: {
+                Authorization: `token ${token}`,
+                Accept: 'application/vnd.github.v3+json',
+            }
+        }
+    );
+}
+
+function generatePRComment(pr: any): string {
+    return `👋 Thanks for opening this pull request!
+    
+I'm a bot that helps with PR reviews. Here's what I found:
+- Title: ${pr.title}
+- Changes: ${pr.changed_files} files modified
+- Additions: ${pr.additions} lines added
+- Deletions: ${pr.deletions} lines removed
+
+Let me know if you need any help! 🤖`;
+}
+
+
+app.use((err: Error, req: Request, res: Response, next: Function) => {
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
+});
+
+const PORT = process.env.PORT || 3001;
+
+async function getUserRepositories(accessToken: string) {
+    try {
+        const response = await axios.get('https://api.github.com/user/repos', {
+            headers: {
+                Authorization: `token ${accessToken}`,
+                Accept: 'application/vnd.github.v3+json'
+            },
+            params: {
+                sort: 'updated',
+                per_page: 100,
+                type: 'all'
+            }
+        });
+
+        return response.data.map((repo: any) => ({
+            id: repo.id,
+            name: repo.name,
+            full_name: repo.full_name,
+            private: repo.private,
+            html_url: repo.html_url,
+            description: repo.description,
+            created_at: repo.created_at,
+            updated_at: repo.updated_at,
+            owner: {
+                login: repo.owner.login,
+                id: repo.owner.id,
+                avatar_url: repo.owner.avatar_url
+            }
+        }));
+    } catch (error) {
+        console.error('Error fetching repositories:', error);
+        throw new Error('Failed to fetch repositories');
+    }
+}
+
+app.get('/api/repos', async (req: Request, res: Response): Promise<any> => {
+    try {
+        const authHeader = req.headers.authorization;
+
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ error: 'Missing or invalid authorization header' });
+        }
+
+        const accessToken = authHeader.split(' ')[1];
+        const repositories = await getUserRepositories(accessToken);
+
+        res.json({ repositories });
+    } catch (error) {
+        console.error('Repository listing error:', error);
+        res.status(500).json({ error: 'Failed to list repositories' });
+    }
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
+
+export default app;
+
+
+
+
+events.close()
