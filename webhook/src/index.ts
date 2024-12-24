@@ -1,174 +1,151 @@
-import SmeeClient from "smee-client";
-import { App, createNodeMiddleware } from "octokit";
-import http from "http";
-import dotenv from "dotenv";
+import "dotenv/config";
+import {
+  Client,
+  Events,
+  GatewayIntentBits,
+  Message,
+  TextChannel,
+} from "discord.js";
+import express from "express";
+import {
+  findFirstGuildGeneralChannel,
+  getAllGuildChannels,
+  handleCommonMessages,
+} from "./helper/helper";
 
+const app = express();
 
-dotenv.config();
+app.use(express.json());
 
-const appId = process.env.GITHUB_APP_ID;
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+  ],
+});
 
-const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET;
-const privateKeyPath = process.env.PRIVATE_KEY_PATH;
+client.once(Events.ClientReady, () => {
+  if (!client.user) {
+    console.error("Client user not found!");
+    return;
+  }
+  console.log(`Ready! Logged in as ${client.user.tag}`);
+});
 
-const clientId = process.env.GITHUB_CLIENT_ID;
-const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+client.on(Events.MessageCreate, (message: Message) => {
+  if (message.author.bot) return;
+  console.log(`Message received: ${message.content}`);
+  const messageContent = message.content.toLowerCase();
+  const message_content = handleCommonMessages(messageContent);
+  if (message_content) {
+    message
+      .reply(message_content)
+      .then(() => {
+        console.log(`Replied to message: ${message.content}`);
+      })
+      .catch((err) => {
+        console.error(`Failed to reply to message: ${err}`);
+      });
+  }
+});
 
-if (!appId || !webhookSecret || !privateKeyPath || !clientId || !clientSecret) {
-    throw new Error("Missing required environment variables");
+const token = process.env.DISCORD_BOT_TOKEN;
+
+if (!token) {
+  console.error(
+    "DISCORD_BOT_TOKEN is not defined in the environment variables"
+  );
+  process.exit(1);
 }
 
-
-const app = new App({
-    appId: appId,
-    oauth: {
-        clientId: clientId,
-        clientSecret: clientSecret,
-    },
-    webhooks: {
-        secret: webhookSecret,
-    },
-    privateKey: privateKeyPath,
-
+client.login(token).catch((err) => {
+  console.error("Failed to log in:", err);
 });
 
-const webhookPort = 3000;
-const webhookHost = "localhost";
-const webhookPath = "/api/github/webhooks";
-
-
-const smee = new SmeeClient({
-    source: "https://smee.io/B7KkCV7BvQPyfmpW",
-    target: `http://${webhookHost}:${webhookPort}${webhookPath}`,
-    logger: console,
+app.get("/", (req, res) => {
+  res.send("Hello World!");
 });
 
-
-
-const main = async () => {
-
-    try {
-        console.log("Starting application");
-
-        console.log("environment variables  ", process.env.GITHUB_APP_ID, process.env.GITHUB_WEBHOOK_SECRET, process.env.PRIVATE_KEY_PATH, process.env.GITHUB_CLIENT_ID, process.env.GITHUB_CLIENT_SECRET);
-
-
-        const events = await smee.start();
-
-        events.on("message", (message: any) => {
-            console.log("message received", message);
-        }
-        )
-
-        app.webhooks.onAny(({ id, name, payload }) => {
-            console.log(`Received event: ${name} with ID: ${id}`);
-            console.log(JSON.stringify(payload, null, 2));
-        });
-
-
-
-        app.webhooks.on("issues.opened", async ({ octokit, payload }) => {
-            console.log("New issue opened:", payload.issue.title);
-            console.log(payload);
-
-            return octokit.rest.issues.createComment({
-                owner: payload.repository.owner.login,
-                repo: payload.repository.name,
-                issue_number: payload.issue.number,
-                body: "Hello, World!",
-            });
-        });
-
-        app.webhooks.on("issues.closed", async ({ octokit, payload }) => {
-            console.log("Issue closed:", payload.issue.title);
-        });
-
-        app.webhooks.on("pull_request.opened", async ({ octokit, payload }) => {
-            console.log("New PR opened:", payload.pull_request.title);
-
-            try {
-
-                await octokit.rest.issues.createComment({
-                    owner: payload.repository.owner.login,
-                    repo: payload.repository.name,
-                    issue_number: payload.pull_request.number,
-                    body: `## Pull Request Checklist
-            - [ ] Code has been tested
-            - [ ] Documentation has been updated
-            - [ ] Changes have been reviewed
-                
-            Thank you for your contribution! 🚀`
-                });
-            } catch (error) {
-                console.error("Error handling pull request:", error);
-            }
-        });
-
-        app.webhooks.on("issues.reopened", async ({ octokit, payload }) => {
-            console.log("Issue reopened:", payload.issue.title);
-        }
-        );
-        
-        app.webhooks.on("installation.created", async ({ octokit, payload }) => {
-            console.log(payload);
-        });
-
-        app.webhooks.on("installation.deleted", async ({ octokit, payload }) => {
-            console.log(payload);
-        });
-
-        app.webhooks.on("installation.suspend", async ({ octokit, payload }) => {
-            console.log(payload);
-        });
-
-        app.webhooks.on("issue_comment.created", async ({ octokit, payload }) => {
-            console.log("New comment on issue:", payload.issue.number);
-
-            const comment = payload.comment.body.toLowerCase();
-            if (comment.includes('/close')) {
-                try {
-                    await octokit.rest.issues.update({
-                        owner: payload.repository.owner.login,
-                        repo: payload.repository.name,
-                        issue_number: payload.issue.number,
-                        state: 'closed'
-                    });
-                    console.log("Issue closed via command");
-                } catch (error) {
-                    console.error("Error closing issue:", error);
-                }
-            }
-        });
-    } catch (error) {
-        console.error("Error starting application:", error);
-    }
-
-};
-
-const middleware = createNodeMiddleware(app);
-
-const server = http.createServer((req, res) => {
-    console.log(`Received request: ${req.method} ${req.url}`);
-
-
-    if (req.url === webhookPath) {
-        console.log("Received webhook event");
-
-
-
-        middleware(req, res)
-        return
-    }
-
-    res.statusCode = 404;
-    res.end('Not found');
+app.get("/api/data", (req, res) => {
+  const q = req.query;
+  res.json({ message: q });
 });
 
+app.get("/api/guilds", async (req, res) => {
+  const guilds = client.guilds.cache;
 
-server.listen(webhookPort, webhookHost, () => {
-    console.log(`Webhook server listening at: http://${webhookHost}:${webhookPort}${webhookPath}`);
-    main().catch(console.error);
+  if (guilds.size === 0) {
+    res.status(404).json({ error: "The bot is not in any guilds" });
+    return;
+  }
+
+  res.json(
+    guilds.map((guild) => {
+      return {
+        name: guild.name,
+        id: guild.id,
+        owner: guild.ownerId,
+        channels: guild.channels.cache.size,
+      };
+    })
+  );
 });
 
+app.get("/api/guilds/:guildId", async (req, res) => {
+  const { guildId } = req.params;
 
+  if (!guildId) {
+    res.status(400).json({ error: "Guild ID is required" });
+    return;
+  }
 
+  const channel_data =await getAllGuildChannels(guildId, client);
+
+  if (!channel_data) {
+    res.status(404).json({ error: "No channels found in the guild" });
+    return;
+  }
+
+  res.json({
+    channels: channel_data,
+  });
+});
+
+app.post("/api/message", async (req, res) => {
+  const { message } = req.body;
+
+  if (!message) {
+    res.status(400).json({ error: "Message is required" });
+    return;
+  }
+
+  const channelId = await findFirstGuildGeneralChannel(client);
+
+  if (!channelId) {
+    res.status(404).json({ error: "General channel not found" });
+    return;
+  }
+
+  const channel = client.channels.cache.get(channelId) as TextChannel;
+
+  if (!channel) {
+    res.status(404).json({ error: `Channel with ID ${channelId} not found` });
+    return;
+  }
+
+  channel
+    .send(message)
+    .then((data) => {
+      res.json({ success: true, message: "Message send Success " });
+    })
+    .catch((err) => {
+      res.status(500).json({ error: `Failed to send message: ${err}` });
+    });
+});
+
+app.listen(3000, () => {
+  console.log("Server is running on port 3000");
+});
+
+console.clear();
