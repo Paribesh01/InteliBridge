@@ -1,42 +1,174 @@
-import express from "express";
-import cors from "cors";
-import { PrismaClient } from "@prisma/client";
+import SmeeClient from "smee-client";
+import { App, createNodeMiddleware } from "octokit";
+import http from "http";
+import dotenv from "dotenv";
 
-const app = express();
 
-app.use(cors());
-app.use(express.json());
-const client = new PrismaClient();
+dotenv.config();
 
-app.post("/hooks/catch/:userId/:zapId", async (req, res) => {
-    const userId = req.params.userId;
-    const zapId = req.params.zapId;
+const appId = process.env.GITHUB_APP_ID;
 
-    console.log(userId)
-    console.log(zapId)
-    console.log("Webhook is here man");
+const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET;
+const privateKeyPath = process.env.PRIVATE_KEY_PATH;
+
+const clientId = process.env.GITHUB_CLIENT_ID;
+const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+
+if (!appId || !webhookSecret || !privateKeyPath || !clientId || !clientSecret) {
+    throw new Error("Missing required environment variables");
+}
+
+
+const app = new App({
+    appId: appId,
+    oauth: {
+        clientId: clientId,
+        clientSecret: clientSecret,
+    },
+    webhooks: {
+        secret: webhookSecret,
+    },
+    privateKey: privateKeyPath,
+
+});
+
+const webhookPort = 3000;
+const webhookHost = "localhost";
+const webhookPath = "/events";
+
+
+const smee = new SmeeClient({
+    source: "https://smee.io/B7KkCV7BvQPyfmpW",
+    target: `http://${webhookHost}:${webhookPort}${webhookPath}`,
+    logger: console,
+});
+
+
+
+const main = async () => {
 
     try {
-        const user = await client.user.findUnique({ where: { id: userId } });
-        if (user) {
-            const run = await client.webhookZap.create({
-                data: {
-                    zapId: zapId,
-                },
-            });
-            console.log("Webhook received");
-            console.log(run);
-            res.json({ message: "Webhook received" });
-        } else {
-            console.log("Webhook received but user not found");
-            res.status(401).send("User not found");
+        console.log("Starting application");
+
+        console.log("environment variables  ", process.env.GITHUB_APP_ID, process.env.GITHUB_WEBHOOK_SECRET, process.env.PRIVATE_KEY_PATH, process.env.GITHUB_CLIENT_ID, process.env.GITHUB_CLIENT_SECRET);
+
+
+        const events = await smee.start();
+
+        events.on("message", (message: any) => {
+            console.log("message received", message);
         }
+        )
+
+        app.webhooks.onAny(({ id, name, payload }) => {
+            console.log(`Received event: ${name} with ID: ${id}`);
+            console.log(JSON.stringify(payload, null, 2));
+        });
+
+
+
+        app.webhooks.on("issues.opened", async ({ octokit, payload }) => {
+            console.log("New issue opened:", payload.issue.title);
+            console.log(payload);
+
+            return octokit.rest.issues.createComment({
+                owner: payload.repository.owner.login,
+                repo: payload.repository.name,
+                issue_number: payload.issue.number,
+                body: "Hello, World!",
+            });
+        });
+
+        app.webhooks.on("issues.closed", async ({ octokit, payload }) => {
+            console.log("Issue closed:", payload.issue.title);
+        });
+
+        app.webhooks.on("pull_request.opened", async ({ octokit, payload }) => {
+            console.log("New PR opened:", payload.pull_request.title);
+
+            try {
+
+                await octokit.rest.issues.createComment({
+                    owner: payload.repository.owner.login,
+                    repo: payload.repository.name,
+                    issue_number: payload.pull_request.number,
+                    body: `## Pull Request Checklist
+            - [ ] Code has been tested
+            - [ ] Documentation has been updated
+            - [ ] Changes have been reviewed
+                
+            Thank you for your contribution! 🚀`
+                });
+            } catch (error) {
+                console.error("Error handling pull request:", error);
+            }
+        });
+
+        app.webhooks.on("issues.reopened", async ({ octokit, payload }) => {
+            console.log("Issue reopened:", payload.issue.title);
+        }
+        );
+        
+        app.webhooks.on("installation.created", async ({ octokit, payload }) => {
+            console.log(payload);
+        });
+
+        app.webhooks.on("installation.deleted", async ({ octokit, payload }) => {
+            console.log(payload);
+        });
+
+        app.webhooks.on("installation.suspend", async ({ octokit, payload }) => {
+            console.log(payload);
+        });
+
+        app.webhooks.on("issue_comment.created", async ({ octokit, payload }) => {
+            console.log("New comment on issue:", payload.issue.number);
+
+            const comment = payload.comment.body.toLowerCase();
+            if (comment.includes('/close')) {
+                try {
+                    await octokit.rest.issues.update({
+                        owner: payload.repository.owner.login,
+                        repo: payload.repository.name,
+                        issue_number: payload.issue.number,
+                        state: 'closed'
+                    });
+                    console.log("Issue closed via command");
+                } catch (error) {
+                    console.error("Error closing issue:", error);
+                }
+            }
+        });
     } catch (error) {
-        console.log("Error processing webhook:", error);
-        res.status(500).send("Internal server error");
+        console.error("Error starting application:", error);
     }
+
+};
+
+const middleware = createNodeMiddleware(app);
+
+const server = http.createServer((req, res) => {
+    console.log(`Received request: ${req.method} ${req.url}`);
+
+
+    if (req.url === webhookPath) {
+        console.log("Received webhook event");
+
+
+
+        middleware(req, res)
+        return
+    }
+
+    res.statusCode = 404;
+    res.end('Not found');
 });
 
-app.listen(3001, () => {
-    console.log("Listening on port 3001");
+
+server.listen(webhookPort, webhookHost, () => {
+    console.log(`Webhook server listening at: http://${webhookHost}:${webhookPort}${webhookPath}`);
+    main().catch(console.error);
 });
+
+
+
