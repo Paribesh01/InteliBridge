@@ -34,7 +34,7 @@ const app = new App({
 
 const webhookPort = 3000;
 const webhookHost = "localhost";
-const webhookPath = "/events";
+const webhookPath = "/api/github/webhooks";
 
 
 const smee = new SmeeClient({
