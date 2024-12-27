@@ -1,0 +1,31 @@
+{
+  "name": "intl",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5",
+    "turbo": "^2.3.3",
+    "typescript": "5.5.4"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "npm@10.8.2",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "dependencies": {
+    "discord.js": "^14.16.3",
+    "http": "^1.0.0",
+    "nodemailer": "^6.9.16",
+    "octokit": "^4.0.2",
+    "redis": "^4.7.0",
+    "smee-client": "^2.0.4"
+  }
+}
