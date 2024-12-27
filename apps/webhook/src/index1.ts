@@ -32,7 +32,7 @@ const app = new App({
 
 });
 
-const webhookPort = 3005;
+const webhookPort = 3000;
 const webhookHost = "localhost";
 const webhookPath = "/api/github/webhooks";
 
@@ -48,9 +48,10 @@ const smee = new SmeeClient({
 const main = async () => {
 
     try {
-        console.log("Starting Webhook application");
+        console.log("Starting application");
 
-  
+        console.log("environment variables  ", process.env.GITHUB_APP_ID, process.env.GITHUB_WEBHOOK_SECRET, process.env.PRIVATE_KEY_PATH, process.env.GITHUB_CLIENT_ID, process.env.GITHUB_CLIENT_SECRET);
+
 
         const events = await smee.start();
 
@@ -163,8 +164,11 @@ const server = http.createServer((req, res) => {
     res.end('Not found');
 });
 
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
+
+server.listen(webhookPort, webhookHost, () => {
+    console.log(`Webhook server listening at: http://${webhookHost}:${webhookPort}${webhookPath}`);
+    main().catch(console.error);
 });
 
-console.clear();
+
+
