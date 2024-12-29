@@ -47,6 +47,7 @@ export const callback = async (req: Request, res: Response) => {
   }
 
   try {
+    console.log("1 ",code)
     const response = await exchangeCodeForToken(app as string, code as string);
 
     const { access_token, refresh_token } = response;  

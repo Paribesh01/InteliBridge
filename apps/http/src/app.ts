@@ -5,9 +5,9 @@ export const appRegistry: any = {
     oauth: {
       authUrl: `https://github.com/login/oauth/authorize?client_id=${process.env.GithubclientID}&redirect_uri=${process.env.CALLBACKBASEURL}github/callback`,
       tokenUrl: "https://github.com/login/oauth/access_token",
-      clientId: process.env.clientID,
-      clientSecret: process.env.clientSecret,
-      redirectUri: "http://localhost:8000/api/v1/o/github/callback",
+      clientId: process.env.GithubclientID,
+      clientSecret: process.env.GithubclientSecret,
+      redirectUri: `${process.env.CALLBACKBASEURL}github/callback`
     },
     webhook: {
       createUrl: "POST /repos/:owner/:repo/hooks",
