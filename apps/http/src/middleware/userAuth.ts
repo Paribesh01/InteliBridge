@@ -16,7 +16,7 @@ export const authenticateToken = () => {
        res.status(401).json({ message: 'Unauthorized: No token provided' });
     }
   
-    jwt.verify(token as string, "FADSF$AFGC%EHR^H6vRHR^vh^E%H6e5vHE%VH^E%" as string, (err, user:any) => {
+    jwt.verify(token as string, process.env.JSONSECRET as string, (err, user:any) => {
       if (err) return res.status(403).json({ message: 'Forbidden: Invalid token' });
       req.user = user;
       next();
