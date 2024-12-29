@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "../db";
+import { string } from "zod";
 
 
 export const GetAllZap = async (req:Request,res:Response)=>{
@@ -54,17 +55,7 @@ export const createZap = async (req: Request, res: Response) => {
       data: {
         name,
         userId: req.user?.userId as string, 
-        workflows: {
-          create: workflows.map((workflow: any, index: number) => ({
-            workflowId: workflow.workflowId,
-            index: index, 
-          })),
-        },
-        trigger: {
-          create: {
-            triggerId,
-          },
-        },
+       
       },
     });
 
@@ -84,3 +75,69 @@ export const createZap = async (req: Request, res: Response) => {
     res.status(500).send("Something went wrong");
   }
 };
+
+
+
+export const updateZapTrigger = async(req:Request,res:Response)=>{
+  const {triggerId} = req.body
+  const {zapid} = req.params
+
+  try{
+
+    
+    const zap =  await prisma.zap.findUnique({where:{id:zapid}})
+    if(zap){
+      const newzap = await prisma.zap.update({where:{id:zapid},data:{
+        trigger:{
+          create:{
+            triggerId:triggerId,
+            
+          }
+        }
+      }})
+      res.send(newzap)
+    }else{
+      res.send("zap not found")
+    }
+    
+  }catch(e){
+    console.log("error while updaiting a zap")
+    res.send("Internel server erro ").status(500)
+  }
+
+
+
+
+}
+export const updateZapWorkflow = async (req:Request,res:Response) =>{
+
+
+  const {workflowids} = req.body
+  const {zapid} = req.params
+
+  try{
+
+    
+    const zap =  await prisma.zap.findUnique({where:{id:zapid}})
+    if(zap){
+      const newzap = await prisma.zap.update({where:{id:zapid},data:{
+        workflows:{
+         create:workflowids.map((workflowid:any,index:number)=>{
+          workflowId:workflowid.workflowid as string,
+            index
+         })
+        }
+      }})
+      res.send(newzap)
+    }else{
+      res.send("zap not found")
+    }
+    
+  }catch(e){
+    console.log("error while updaiting a zap")
+    res.send("Internel server erro ").status(500)
+  }
+
+
+
+}

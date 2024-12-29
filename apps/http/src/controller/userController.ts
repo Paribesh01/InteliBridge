@@ -24,7 +24,7 @@ export const Login = async (req: Request, res: Response) => {
           userId: user?.id,
           email: user?.email,
         },
-        process.env.JSONSECRET as string,
+        "FADSF$AFGC%EHR^H6vRHR^vh^E%H6e5vHE%VH^E%" as string,
         { expiresIn: "4h" }
       );
       res.send({ token, success: true });

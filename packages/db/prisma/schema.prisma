@@ -41,6 +41,8 @@ model Zap {
 model Trigger {
   id String @id @default(uuid())
   triggerId String
+  accessToken String?
+  refreshToken String?
   zapId       String @unique
   zap         Zap      @relation(fields: [zapId], references: [id])
   type AvailableTrigger @relation(fields: [triggerId], references: [id])
@@ -51,6 +53,8 @@ model Workflow {
   id          String   @id @default(uuid())
   workflowId String
   zapId       String
+    accessToken String?
+  refreshToken String?
   zap         Zap      @relation(fields: [zapId], references: [id])
   index       Int @default(0)
   type AvailableWorkflow @relation(fields: [workflowId],references: [id])
