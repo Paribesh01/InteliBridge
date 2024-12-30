@@ -3,7 +3,6 @@
 import axios from 'axios';
 import { appRegistry } from './file/app';
 
-// Exchange token function for GitHub
 export const exchangeGitHubCodeForToken = async (code:string) => {
   const config = appRegistry.github?.oauth;
   if (!config) throw new Error("GitHub app configuration not found");
@@ -30,7 +29,6 @@ export const exchangeGitHubCodeForToken = async (code:string) => {
   return {access_token:response.data?.access_token, refresh_token:response.data?.refresh_token };
 };
 
-// Exchange token function for Slack
 export const exchangeSlackCodeForToken = async (code:string) => {
 
     console.log("3",code)
@@ -47,8 +45,8 @@ export const exchangeSlackCodeForToken = async (code:string) => {
   },
   {
     headers: {
-      "Accept": "application/json", // Set Accept header for JSON response
-      "Content-Type": "application/json", // Set Content-Type header to JSON
+      "Accept": "application/json", 
+      "Content-Type": "application/json", 
     },
   }
 );
@@ -56,13 +54,9 @@ export const exchangeSlackCodeForToken = async (code:string) => {
   return {access_token:response.data?.access_token, refresh_token:response.data?.refresh_token };
 };
 
-// Add more app-specific OAuth functions as needed
-
-// Mapping registry for dynamic function calling
 const oauthFunctions:any = {
   github: exchangeGitHubCodeForToken,
   slack: exchangeSlackCodeForToken,
-  // Add other apps here
 };
 
 export default oauthFunctions;

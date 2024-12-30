@@ -2,7 +2,7 @@ import path from 'path';
 
 const APPS_FOLDER = path.resolve(__dirname, '..', '..', 'src', 'apps');
 
-export const giveoauthurl = async (app: string, state: string) => {
+export const getSubTrigger = async (app: string) => {
 
 
 
@@ -18,13 +18,13 @@ export const giveoauthurl = async (app: string, state: string) => {
       throw new Error('No default export found in the file');
     }
 
-    const githubRegistry = module.default;
+    const Registry = module.default;
 
-    const config = githubRegistry.oauth.authUrl;
+    return {subTriggers:Registry.triggers};
 
-    return `${config}&state=${state}`;
+
   } catch (error) {
     console.error('Error while loading GitHub registry:', error);
-    throw error; 
+    throw error;  
   }
 };

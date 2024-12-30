@@ -1,5 +1,7 @@
 import express, { Request, Response } from "express"
 import { appRegistry } from "../apps/file/app"
+import { getSubTrigger } from "../helpers/getsubTriggers"
+import { getSubWorkflows } from "../helpers/getsubWorkflows"
 
 
 
@@ -10,12 +12,12 @@ export const giveSubTriggers = (req:Request,res:Response)=>{
 
     try{
 
-        const data = appRegistry[app as string].triggers
+        const data = getSubTrigger(app as string)
         if(!data){
             res.send("app is not there")
             console.log("app is not there")
         }
-        res.json({triggers:data})
+        res.json(data)
 
     }catch(e){
         console.log("error while giving a subtrigger")
@@ -33,9 +35,9 @@ export const giveSubWokflows = (req:Request,res:Response)=>{
 
     try{
 
-        const data = appRegistry[app as string].workflows
+        const data = getSubWorkflows(app as string)
 
-        res.json({workflows:data})
+        res.json(data)
 
     }catch(e){
         console.log("error while giving a subtrigger")
