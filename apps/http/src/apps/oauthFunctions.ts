@@ -1,7 +1,7 @@
 // oauthFunctions.js
 
 import axios from 'axios';
-import { appRegistry } from '../app';
+import { appRegistry } from './file/app';
 
 // Exchange token function for GitHub
 export const exchangeGitHubCodeForToken = async (code:string) => {

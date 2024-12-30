@@ -5,6 +5,8 @@ import ZapRouter from "./zap";
 import TriggerRouter from "./trigger";
 import WorkflowRouter from "./workflow";
 import oauthRouter from "./oauth";
+import setSubRouter from "./setSub";
+import giveDataRouter from "./giveData";
 
 const router = express.Router()
 
@@ -14,6 +16,8 @@ router.use("/zap",ZapRouter)
 router.use("/trigger",TriggerRouter)
 router.use("/workflow",WorkflowRouter)
 router.use("/o",oauthRouter)
+router.use("/setSub",setSubRouter)
+router.use("/giveData",giveDataRouter)
 
 
 

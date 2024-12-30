@@ -16,7 +16,7 @@ dotenv.config();
 
 
 
-export const OAuth = (req: Request, res: Response) => {
+export const OAuth = async(req: Request, res: Response) => {
   console.log("here")
   const { app,id } = req.params;
   
@@ -29,7 +29,7 @@ export const OAuth = (req: Request, res: Response) => {
         //   console.log("app is not there in our system");
         //   res.send("invalid app");
         // }
-        const redirect_uri = giveoauthurl(app as string,id as string)
+        const redirect_uri = await giveoauthurl(app as string,id as string)
 
         console.log(redirect_uri)
     res.redirect(redirect_uri as string);
@@ -101,6 +101,11 @@ export const createWebhook = async (req: Request, res: Response) => {
 
   const flow = await prisma.trigger.findUnique({ where: { id } });
   const zap = await prisma.zap.findUnique({ where: { id: zapid } });
+
+
+
+
+
 
   console.log(flow?.accessToken)
   if (app == "github") {

@@ -43,6 +43,7 @@ model Trigger {
   triggerId String
   accessToken String?
   refreshToken String?
+  metaData Json?
   zapId       String @unique
   zap         Zap      @relation(fields: [zapId], references: [id])
   type AvailableTrigger @relation(fields: [triggerId], references: [id])
@@ -53,8 +54,9 @@ model Workflow {
   id          String   @id @default(uuid())
   workflowId String
   zapId       String
-    accessToken String?
+  accessToken String?
   refreshToken String?
+  metaData Json?
   zap         Zap      @relation(fields: [zapId], references: [id])
   index       Int @default(0)
   type AvailableWorkflow @relation(fields: [workflowId],references: [id])
@@ -64,18 +66,22 @@ model Workflow {
 
 
 model AvailableWorkflow {
-  id       String @id @default(uuid())
-  name     String
-  image    String
-  workflow  Workflow[]
+  id                         String                   @id @default(uuid())
+  name                       String
+  image                      String
+  subType                    String?
+  workflow                   Workflow[]
 }
 
+
 model AvailableTrigger {
-  id       String @id @default(uuid())
-  name     String 
-  image    String
-  triggers Trigger[]
+  id                   String                 @id @default(uuid())
+  name                 String
+  image                String
+  subType              String?
+  triggers             Trigger[]
 }
+
 
 
 model WebhookZap {

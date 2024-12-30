@@ -14,5 +14,7 @@ export const appRegistry: any = {
       events: { ISSUE: "issues" },
       secret: process.env.JSONSECRET,
     },
+    triggers:["new-pullrequest","new-issue"],
+    workflows:["create-issue"]
   },
 };

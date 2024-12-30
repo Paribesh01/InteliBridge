@@ -41,9 +41,9 @@ export const GetOneZap  = async(req:Request,res:Response)=>{
 }
 
 export const createZap = async (req: Request, res: Response) => {
-  const { name, workflows, triggerId } = req.body;
+  const { name} = req.body;
   try {
-    if (!name || !workflows || !Array.isArray(workflows) || !triggerId) {
+    if (!name ) {
        res.status(400).send("Invalid input data");
     }
 
@@ -101,7 +101,7 @@ export const updateZapTrigger = async(req:Request,res:Response)=>{
     }
     
   }catch(e){
-    console.log("error while updaiting a zap")
+    console.log("error while updaiting a zap",e)
     res.send("Internel server erro ").status(500)
   }
 
@@ -114,27 +114,34 @@ export const updateZapWorkflow = async (req:Request,res:Response) =>{
 
   const {workflowids} = req.body
   const {zapid} = req.params
+  console.log(workflowids)
 
   try{
 
     
     const zap =  await prisma.zap.findUnique({where:{id:zapid}})
     if(zap){
-      const newzap = await prisma.zap.update({where:{id:zapid},data:{
-        workflows:{
-         create:workflowids.map((workflowid:any,index:number)=>{
-          workflowId:workflowid.workflowid as string,
-            index
-         })
+      const newzap = await prisma.zap.update({
+        where: { id: zapid },
+        data: {
+          workflows: {
+            create: workflowids.map((workflowid: any, index: number) => {
+      
+              return {
+                workflowId: workflowid.workflowId, 
+              };
+            })
+          }
         }
-      }})
+      });
+      
       res.send(newzap)
     }else{
       res.send("zap not found")
     }
     
   }catch(e){
-    console.log("error while updaiting a zap")
+    console.log("error while updaiting a zap",e)
     res.send("Internel server erro ").status(500)
   }
 

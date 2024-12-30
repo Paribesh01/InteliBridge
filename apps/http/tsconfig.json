@@ -17,6 +17,8 @@
     "strict": true,
     "target": "ES2022",
     "allowSyntheticDefaultImports": true,
+    "allowImportingTsExtensions": true  
+
     
     
 
