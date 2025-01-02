@@ -8,9 +8,9 @@ async function main() {
 main()
 import prisma from "../db";
 import { giveoauthurl } from "../helpers/giveOauthurl";
-import { string } from "zod";
 import dotenv from 'dotenv';
 import { exchangeCodeForToken } from "../helpers/giveAcessTokenurl";
+import { createWebhookHelper } from "../helpers/createWebhook";
 dotenv.config();
 
 
@@ -102,31 +102,34 @@ export const createWebhook = async (req: Request, res: Response) => {
   const flow = await prisma.trigger.findUnique({ where: { id } });
   const zap = await prisma.zap.findUnique({ where: { id: zapid } });
 
-
+  
 
 
 
 
   console.log(flow?.accessToken)
-  if (app == "github") {
-    const client = new octokit({ auth: flow?.accessToken });
-    const response = await client.request("POST /repos/Paribesh01/2d-Metaverse/hooks",{
-      owner: "Paribesh01",
-      repo: "2d-Metaverse",
-      active: true,
-      events: ["issues"],
-      config: {
-        url: `https://386d-59-145-142-18.ngrok-free.app/${app}/${zap?.id}/${flow?.id}`,
-        content_type: "json",
-        insecure_ssl: "0",
-        secret: "your-webhook-secret",
-      },
-    });
-    console.log("Web hook is created...");
-  } else {
-    console.log("app is not supprted ");
 
-  }
+const resp = await createWebhookHelper(app as string,flow?.accessToken as string,flow?.metaData as any,zapid as string,req.user?.userId as string)
+  // if (app == "github") {
+  //   const client = new octokit({ auth: flow?.accessToken });
+  //   const response = await client.request("POST /repos/Paribesh01/2d-Metaverse/hooks",{
+  //     owner: "Paribesh01",
+  //     repo: "2d-Metaverse",
+  //     active: true,
+  //     events: ["issues"],
+  //     config: {
+  //       url: `https://386d-59-145-142-18.ngrok-free.app/${app}/${zap?.id}/${flow?.id}`,
+  //       content_type: "json",
+  //       insecure_ssl: "0",
+  //       secret: "your-webhook-secret",
+  //     },
+  //   });
+  console.log(resp)
+    console.log("Web hook is created...");
+  // } else {
+  //   console.log("app is not supprted ");
+
+  // }
 
   res.send("webhook is created ");
 };

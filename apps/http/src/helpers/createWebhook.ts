@@ -3,8 +3,8 @@ import path from 'path';
 
 const APPS_FOLDER = path.resolve(__dirname, 'apps');
 
-const fileName = "dynamic-data"
-export const getDymanicDataforapp = async (app:string,token:string) => {
+const fileName = "createWebhook"
+export const createWebhookHelper = async (app:string,token:string,metaData:any,zapid:string,userid:string) => {
   try {
     const filePath = path.join(APPS_FOLDER, app, `${fileName}.js`);
     console.log('Attempting to load file from path:', filePath);
@@ -18,7 +18,7 @@ export const getDymanicDataforapp = async (app:string,token:string) => {
     }
      const functionToRun = module.default.default;
     
-     const result = await functionToRun(token);
+     const result = await functionToRun(token,metaData,zapid,userid);
     return result
 
   } catch (error) {

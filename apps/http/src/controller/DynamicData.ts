@@ -47,7 +47,7 @@ let token
 
 export const saveDynamicData = async (req: Request, res: Response) => {
     const { id } = req.params;
-
+    const {dynamicData} = req.body
     try {
         const workflow = await prisma.workflow.findUnique({ where: { id } });
 
@@ -59,7 +59,7 @@ export const saveDynamicData = async (req: Request, res: Response) => {
                 res.status(404).send("ID is not matched");
             } else {
 
-                const newData = { someKey: "someValue" }; 
+                const newData = { dynamicData:dynamicData }; 
 
                 const updatedTrigger = await prisma.trigger.update({
                     where: { id },
@@ -79,7 +79,7 @@ export const saveDynamicData = async (req: Request, res: Response) => {
             }
         } else {
 
-            const newData = { someKey: "someValueForWorkflow" }; 
+            const newData = { dynamicData:dynamicData }; 
 
             const updatedWorkflow = await prisma.workflow.update({
                 where: { id },
