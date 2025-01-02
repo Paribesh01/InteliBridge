@@ -12,8 +12,8 @@ import path from 'path';
 
 const APPS_FOLDER = path.resolve(__dirname, 'apps');
 
-const fileName = "oauth"
-export const giveAccessToken = async (app:string) => {
+const fileName = "dynamic-data"
+export const getDymanicDataforapp = async (app:string,token:string) => {
   try {
     const filePath = path.join(APPS_FOLDER, app, `${fileName}.js`);
     console.log('Attempting to load file from path:', filePath);
@@ -27,7 +27,7 @@ export const giveAccessToken = async (app:string) => {
     }
      const functionToRun = module.default.default;
     
-     const result = await functionToRun();
+     const result = await functionToRun(token);
     return result
 
   } catch (error) {
