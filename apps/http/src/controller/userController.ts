@@ -2,39 +2,45 @@ import { Express, Request, Response } from "express";
 import prisma from "../db";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+
 export const Login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   try {
+    console.log( "hwere")
     const user = await prisma.user.findUnique({
       where: {
         email,
       },
     });
-    if (!user) res.status(400).json({ message: "Invalid email or password" });
 
-    const isPasswordValid = await bcrypt.compare(
-      password,
-      user?.password as string
-    );
-
-    if (user && isPasswordValid) {
-      const token = jwt.sign(
-        {
-          userId: user?.id,
-          email: user?.email,
-        },
-       process.env.JSONSECRET as string,
-        { expiresIn: "4h" }
-      );
-      res.send({ token, success: true });
+    if (!user) {
+      console.log("user is not ehte ")
+      res.status(400).json({ message: "Invalid email or password" });
     } else {
-      res.json({ message: "email or password is wrong" }).status(401);
+      const isPasswordValid = await bcrypt.compare(
+        password,
+        user.password as string
+      );
+
+      if (isPasswordValid) {
+        const token = jwt.sign(
+          {
+            userId: user.id,
+            email: user.email,
+          },
+          process.env.JSONSECRET as string,
+          { expiresIn: "4h" }
+        );
+        res.status(200).json({ token, success: true });
+      } else {
+        console.log("password is not matched")
+        res.status(401).json({ message: "Email or password is wrong" });
+      }
     }
   } catch (e) {
-    res.send("Something went wrong").status(500);
-
-    console.log(e);
+    res.status(500).send("Something went wrong");
+    console.error(e);
   }
 };
 export const Signup = async (req: Request, res: Response) => {

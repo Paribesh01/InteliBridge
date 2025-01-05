@@ -14,7 +14,7 @@ function useLogin() {
 
     try {
       const response: any = await axios.post(
-        "http://localhost:3000/api/v1/auth/login",
+        "http://localhost:8000/api/v1/auth/login",
         { email, password }
       );
 
@@ -23,6 +23,7 @@ function useLogin() {
       }
 
       setData(response.data);
+      console.log("token is here")
       console.log(data);
     } catch (err) {
       const axiosError = err as any;

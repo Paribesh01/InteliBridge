@@ -6,17 +6,19 @@ import { getSubWorkflows } from "../helpers/getsubWorkflows"
 
 
 
-export const giveSubTriggers = (req:Request,res:Response)=>{
+export const giveSubTriggers = async(req:Request,res:Response)=>{
 
     const {app} = req.params
 
     try{
 
-        const data = getSubTrigger(app as string)
+        const data = await getSubTrigger(app as string)
         if(!data){
             res.send("app is not there")
             console.log("app is not there")
         }
+
+        console.log("this is for trigger",data)
         res.json(data)
 
     }catch(e){
@@ -29,13 +31,14 @@ export const giveSubTriggers = (req:Request,res:Response)=>{
 
 }
 
-export const giveSubWokflows = (req:Request,res:Response)=>{
+export const giveSubWokflows =async (req:Request,res:Response)=>{
 
     const {app} = req.params
 
     try{
 
-        const data = getSubWorkflows(app as string)
+        const data = await getSubWorkflows(app as string)
+        console.log("this is for workflow",data)
 
         res.json(data)
 

@@ -15,7 +15,7 @@ export default function useSignup() {
 
     try {
       const response: any = await axios.post(
-        "http://localhost:3000/api/v1/auth/signup",
+        "http://localhost:8000/api/v1/auth/signup",
         { username, email, password }
       );
       console.log("here 3");

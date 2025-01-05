@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-function useAvialableTrigger() {
+function useAvialableWorkflow() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -15,7 +15,7 @@ function useAvialableTrigger() {
 
       try {
         const response: any = await axios.get(
-          "http://localhost:8000/api/v1/trigger/availableTrigger",
+          "http://localhost:8000/api/v1/workflow/availableWorkflow",
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -41,4 +41,4 @@ function useAvialableTrigger() {
   return { data, error, loading };
 }
 
-export default useAvialableTrigger;
+export default useAvialableWorkflow;

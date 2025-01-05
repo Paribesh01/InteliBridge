@@ -20,7 +20,7 @@ export const getSubWorkflows = async (app: string) => {
 
     const Registry = module.default;
 
-    return {subWorkflows:Registry.workflows};
+    return {subTypes:Registry.workflows};
 
 
   } catch (error) {

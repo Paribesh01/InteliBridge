@@ -16,7 +16,7 @@ app.use(express.json());
 app.use("/api/v1", router);
 
 // Use the environment variable for the port
-const port = process.env.PORT || 8000 // Fallback to 8000 if PORT is not set
+const port =   8000 // Fallback to 8000 if PORT is not set
 
     console.log(process.env.GithubclientID)
 

@@ -20,7 +20,7 @@ export const getSubTrigger = async (app: string) => {
 
     const Registry = module.default;
 
-    return {subTriggers:Registry.triggers};
+    return {subTypes:Registry.triggers};
 
 
   } catch (error) {

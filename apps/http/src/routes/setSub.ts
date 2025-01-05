@@ -4,7 +4,7 @@ import { setSub } from "../controller/setSub";
 
 const setSubRouter = express.Router();
 
-setSubRouter.get("/:app", setSub);
+setSubRouter.post("/:app", setSub);
 
 
 

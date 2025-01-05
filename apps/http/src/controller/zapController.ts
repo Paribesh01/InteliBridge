@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "../db";
-import { string } from "zod";
+import { date, string } from "zod";
 
 
 export const GetAllZap = async (req:Request,res:Response)=>{
@@ -87,15 +87,37 @@ export const updateZapTrigger = async(req:Request,res:Response)=>{
     
     const zap =  await prisma.zap.findUnique({where:{id:zapid}})
     if(zap){
-      const newzap = await prisma.zap.update({where:{id:zapid},data:{
-        trigger:{
-          create:{
-            triggerId:triggerId,
+      // const newzap = await prisma.zap.update({where:{id:zapid},data:{
+      //   trigger:{
+      //     create:{
+      //       triggerId:triggerId,
             
-          }
-        }
+      //     }
+      //   }
+        
+      // },select:{
+      //   id:true,
+      //   trigger:{
+          
+      //     select:{
+      //       id:true,
+      //       triggerId:true,
+      //       type:{
+      //         select:{
+      //           name:true
+      //         }
+      //       }
+      //     }
+      //   }
+      // }})
+
+      const trigger = await prisma.trigger.create({data:{
+        triggerId:triggerId,
+        zapId:zapid as string
       }})
-      res.send(newzap)
+
+
+      res.send(trigger)
     }else{
       res.send("zap not found")
     }
@@ -112,30 +134,57 @@ export const updateZapTrigger = async(req:Request,res:Response)=>{
 export const updateZapWorkflow = async (req:Request,res:Response) =>{
 
 
-  const {workflowids} = req.body
+  const {workflowid} = req.body
   const {zapid} = req.params
-  console.log(workflowids)
+  console.log(workflowid)
 
   try{
 
     
     const zap =  await prisma.zap.findUnique({where:{id:zapid}})
     if(zap){
-      const newzap = await prisma.zap.update({
-        where: { id: zapid },
-        data: {
-          workflows: {
-            create: workflowids.map((workflowid: any, index: number) => {
+
+
+      const newWorkflow = await prisma.workflow.create({data:{
+        workflowId:workflowid,
+        zapId:zapid as string
+      }})
+
+
+      return(workflowid)
+
+
+      // const newzap = await prisma.zap.update({
+      //   where: { id: zapid },
+      //   data: {
+      //     workflows: {
+      //       create: workflowids.map((workflowid: any, index: number) => {
       
-              return {
-                workflowId: workflowid.workflowId, 
-              };
-            })
-          }
-        }
-      });
+      //         return {
+      //           workflowId: workflowid.workflowId, 
+
+      //         };
+      //       })
+      //     }
+      //   },select:{
+      //     id:true,
+      //     workflows:{
+      //       select:{
+      //         workflowId:true,
+      //         id:true,
+      //         type:{
+      //           select:{
+      //             name:true
+      //           }
+      //         }
+      //       }
+      //     }
+          
+      //   }
+      // });
+      // console.log(newzap)
       
-      res.send(newzap)
+      // res.send(newzap)
     }else{
       res.send("zap not found")
     }

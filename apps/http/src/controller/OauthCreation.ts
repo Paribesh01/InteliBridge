@@ -32,7 +32,7 @@ export const OAuth = async(req: Request, res: Response) => {
         const redirect_uri = await giveoauthurl(app as string,id as string)
 
         console.log(redirect_uri)
-    res.redirect(redirect_uri as string);
+    res.json({redirectUrl:redirect_uri});
   } catch {}
 };
 

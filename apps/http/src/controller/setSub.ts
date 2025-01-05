@@ -4,7 +4,9 @@ import prisma from "../db";
 export const setSub = async(req:Request,res:Response)=>{
 
     const {app}  = req.params
-    const {subType,id}  =req.body    
+    const {subType,id}  =req.body   
+    
+    console.log(id,subType)
 
     try{
         const workflow = await prisma.workflow.findUnique({where:{id}})
