@@ -1,35 +1,31 @@
-import oauthFunctions from "../apps/oauthFunctions";
-
-export const exchangeCodeForToken = async (app:string, code:string) => {
-  const exchangeFunction = oauthFunctions[app]; 
-  if (!exchangeFunction) throw new Error(`No OAuth function found for app: ${app}`);
-  console.log("2," ,code)
-  const tokenData = await exchangeFunction(code);  
-  return tokenData;
-};
-
 import path from 'path';
+import { pathToFileURL } from 'url';
 
-const APPS_FOLDER = path.resolve(__dirname, 'apps');
+const APPS_FOLDER = path.resolve(__dirname, '../apps');
+const fileName = 'oauth';
 
-const fileName = "oauth"
-export const giveAccessToken = async (app:string) => {
+export const giveAccessToken = async (app: string, code: string) => {
   try {
-    const filePath = path.join(APPS_FOLDER, app, `${fileName}.js`);
+    // Resolve the absolute file path and convert it to a file URL
+    const filePath = path.join(APPS_FOLDER, app, `${fileName}.mjs`);
+    const fileURL = pathToFileURL(filePath).href;
+
     console.log('Attempting to load file from path:', filePath);
 
-    const module = await import(filePath);
+    // Import the module dynamically
+    const module = await import(fileURL);
 
-    if (!module.default || !module.default.default || typeof module.default.default !== 'function') {
+    // Ensure the default export is a function
+    if (!module.default || typeof module.default !== 'function') {
       throw new Error(
         `No default function found in file "${fileName}" for app "${app}".`
       );
     }
-     const functionToRun = module.default.default;
-    
-     const result = await functionToRun();
-    return result
 
+    // Call the default function with the provided code
+    const result = await module.default(code);
+
+    return result;
   } catch (error) {
     console.error(`Error logging default function from "${fileName}" for app "${app}":`, error);
     throw error;

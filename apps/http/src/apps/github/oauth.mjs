@@ -1,12 +1,14 @@
-import { appRegistry } from "../file/app";
+import githubRegistry from './index.mjs';
+import axios from 'axios';  
 
-   const exchangeGitHubCodeForToken = async (code:string) => {
-    const config = appRegistry.github?.oauth;
+
+   const exchangeGitHubCodeForToken = async (code) => {
+    const config = githubRegistry.oauth;
     if (!config) throw new Error("GitHub app configuration not found");
   
       console.log("github function is called")
   
-    const response:any= await axios.post(config.tokenUrl, null, {
+    const response= await axios.post(config.tokenUrl, null, {
       params: {
           client_id	: config.clientId,
         client_secret: config.clientSecret,

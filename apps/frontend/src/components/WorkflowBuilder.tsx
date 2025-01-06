@@ -3,7 +3,7 @@ import { useWorkflow } from "@/contex/workflowContex"
 import { PlusCircle, Trash2 } from 'lucide-react'
 
 interface WorkflowBuilderProps {
-  onSelectBlock: (blockType: string, index: number) => void
+  onSelectBlock: (id:string|null,blockType: string, index: number,auth:boolean) => void
 }
 
 export default function WorkflowBuilder({ onSelectBlock }: WorkflowBuilderProps) {
@@ -17,7 +17,7 @@ export default function WorkflowBuilder({ onSelectBlock }: WorkflowBuilderProps)
           <Button 
             className="w-full justify-start" 
             variant="outline"
-            onClick={() => onSelectBlock('trigger', -1)}
+            onClick={() => onSelectBlock(trigger.id,'trigger', -1,false)}
           >
             Trigger: {trigger.app} - {trigger.subtype}
           </Button>
@@ -25,7 +25,7 @@ export default function WorkflowBuilder({ onSelectBlock }: WorkflowBuilderProps)
           <Button 
             className="w-full justify-start" 
             variant="outline"
-            onClick={() =>{ onSelectBlock('trigger', -1)
+            onClick={() =>{ onSelectBlock(null,'trigger', -1,false)
                 console.log("trigger is selected")
             }}
           >
@@ -38,7 +38,7 @@ export default function WorkflowBuilder({ onSelectBlock }: WorkflowBuilderProps)
             <Button 
               className="flex-grow justify-start" 
               variant="outline"
-              onClick={() => onSelectBlock('action', index)}
+              onClick={() => onSelectBlock(action.id,'action', index,false)}
             >
               Action: {action.app} - {action.subtype}
             </Button>
@@ -54,7 +54,7 @@ export default function WorkflowBuilder({ onSelectBlock }: WorkflowBuilderProps)
         <Button 
           className="w-full justify-start" 
           variant="outline"
-          onClick={() => onSelectBlock('action', actions.length)}
+          onClick={() => onSelectBlock(null,'action', actions.length,false)}
         >
           <PlusCircle className="mr-2 h-4 w-4" />
           Add Action

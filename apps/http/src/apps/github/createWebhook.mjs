@@ -1,5 +1,5 @@
-import fetchRepos from "./dynamic-data";
-let octokit:any
+import fetchRepos from "./dynamicData.mjs";
+let octokit
 async function main() {
   const { Octokit } = await import("octokit");
   octokit = Octokit
@@ -7,9 +7,9 @@ async function main() {
 main()
 const app ="github"
 
-const createWebhook = async(token:string,metaData:any,zapid:string,userid:string)=> {
+const createWebhook = async(token,metaData,zapid,userid)=> {
   try {
-   const repos:any = fetchRepos(token)
+   const repos = fetchRepos(token)
    const owner = repos[0].owner
 
 
@@ -29,7 +29,7 @@ const createWebhook = async(token:string,metaData:any,zapid:string,userid:string
    });
 
 
-  } catch (error:any) {
+  } catch (error) {
     if (error.response) {
       console.error(
         `Error: ${error.response.status} - ${error.response.statusText}`

@@ -9,8 +9,8 @@ main()
 import prisma from "../db";
 import { giveoauthurl } from "../helpers/giveOauthurl";
 import dotenv from 'dotenv';
-import { exchangeCodeForToken } from "../helpers/giveAcessTokenurl";
 import { createWebhookHelper } from "../helpers/createWebhook";
+import { giveAccessToken } from "../helpers/giveAcessTokenurl";
 dotenv.config();
 
 
@@ -48,7 +48,7 @@ export const callback = async (req: Request, res: Response) => {
 
   try {
     console.log("1 ",code)
-    const response = await exchangeCodeForToken(app as string, code as string);
+    const response = await  giveAccessToken(app as string, code as string);
 
     const { access_token, refresh_token } = response;  
     console.log("State:", state);
@@ -75,6 +75,7 @@ export const callback = async (req: Request, res: Response) => {
           },
         });
         console.log("Trigger updated successfully");
+
       }
     } else {
       await prisma.workflow.update({
@@ -86,8 +87,8 @@ export const callback = async (req: Request, res: Response) => {
       });
       console.log("Workflow updated successfully");
     }
+    res.send("Done, you may close this window");
 
-    res.send("Done");
   } catch (error:any) {
     console.error("Error during OAuth exchange:", error);
     res.status(500).send(error.message || "An error occurred during the OAuth process");

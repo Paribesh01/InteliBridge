@@ -3,7 +3,7 @@ import axios from "axios";
 
 const url = 'https://api.github.com/user/repos';
 
-const fetchRepos = async(token:string)=> {
+const fetchRepos = async(token)=> {
   try {
     const response = await axios.get(url, {
       headers: {
@@ -15,7 +15,7 @@ const fetchRepos = async(token:string)=> {
     const repos = response.data;
     console.log(repos)
     return repos
-  } catch (error:any) {
+  } catch (error) {
     if (error.response) {
       console.error(
         `Error: ${error.response.status} - ${error.response.statusText}`

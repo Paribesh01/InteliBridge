@@ -36,7 +36,7 @@ let token
         res.send({dynamicData})
 
     }catch(e){
-        console.log("error while giving a subtrigger")
+        console.log("error while giving a dynamcidata")
         res.send("internel server error")
     }
 
@@ -66,11 +66,11 @@ export const saveDynamicData = async (req: Request, res: Response) => {
                     data: {
                         metaData: {
 
-                            set: {
+                            
                                 ...(trigger.metaData as Prisma.JsonObject || {}), 
                                 ...newData, 
                             },
-                        },
+                        
                     },
                 });
 

@@ -16,7 +16,7 @@ export default function SelectSubtype({ type, selectedApp, selectedSubtype, onSe
     const getSubTypes = async () => {
       try {
         const res:any = await axios.get(
-          `http://localhost:8000/api/v1/giveData/${type}/${selectedApp.app}`
+          `http://localhost:8000/api/v1/giveData/${type=="trigger" ? "trigger" : "workflow"}/${selectedApp.app}`
         );
         console.log("Fetched subtypes for:", selectedApp.app, type);
         setSubTypes(res.data?.subTypes || []);

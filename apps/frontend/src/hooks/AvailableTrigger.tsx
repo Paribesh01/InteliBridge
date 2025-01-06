@@ -23,6 +23,7 @@ function useAvialableTrigger() {
           }
         );
         setData(response.data);
+        console.log("Available trigger is fetched",response.data)
       } catch (err) {
         const axiosError = err as any;
         setError(

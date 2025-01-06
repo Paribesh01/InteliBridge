@@ -23,6 +23,8 @@ function useAvialableWorkflow() {
           }
         );
         setData(response.data);
+        console.log("Available workflow is fetched",response.data)
+
       } catch (err) {
         const axiosError = err as any;
         setError(

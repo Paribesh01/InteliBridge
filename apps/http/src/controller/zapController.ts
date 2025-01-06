@@ -1,50 +1,94 @@
 import { Request, Response } from "express";
 import prisma from "../db";
 import { date, string } from "zod";
+import { giveAccessToken } from "../helpers/giveAcessTokenurl";
 
 
-export const GetAllZap = async (req:Request,res:Response)=>{
-    try{
-        const zaps = await prisma.zap.findMany({where:{
-            userId:req.user?.userId
-        }})
-        if(zaps){
-
-            res.json({zaps:zaps})
-        }else{
-            res.json({error:"no zaps found"})
-        }
-    }catch(e){
-        console.log(e)
-        res.status(500).send("Something went wrong")
+export const GetAllZap = async (req: Request, res: Response) => {
+  try {
+    if (!req.user?.userId) {
+       res.status(401).json({ error: "Unauthorized" });
     }
-}
 
-export const GetOneZap  = async(req:Request,res:Response)=>{
-    try{
-        const {id} = req.params
-        const zap = await prisma.zap.findUnique({where:{
-            userId:req.user?.userId,
-            id
-        }})
-        if(zap){
-            res.json({zap})
-        }else{
-            res.json({error:"no zap found"})
-        }
+    const zaps = await prisma.zap.findMany({
+      where: {
+        userId: req.user.userId,
+      },
+    });
 
-    }catch(e){
-
-        console.log(e)
-        res.status(500).send("Something went wrong")
+    if (zaps && zaps.length > 0) {
+      res.json({ zaps });
+    } else {
+      res.status(404).json({ error: "No zaps found" });
     }
-}
+  } catch (e) {
+    console.error(e);
+    res.status(500).send("Something went wrong");
+  }
+};
+
+
+export const GetOneZap = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!req.user?.userId) {
+       res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const zap = await prisma.zap.findFirst({
+      where: {
+        id,
+        userId: req.user.userId,
+      },
+      select: {
+        id: true,
+        workflows: {
+          select:{
+            id:true,
+            type:{
+              select:{
+                name:true
+              }
+            },
+            metaData:true,
+
+          }
+        },
+        trigger: {
+          select:{
+            id:true,
+            type:{
+              select:{
+                name:true
+              }
+            },
+            metaData:true,
+
+          }
+        },
+        
+      },
+    });
+
+    if (zap) {
+      res.json({ zap });
+    } else {
+      res.status(404).json({ error: "No zap found" });
+    }
+  } catch (e) {
+    console.error(e);
+    res.status(500).send("Something went wrong");
+  }
+};
+
 
 export const createZap = async (req: Request, res: Response) => {
-  const { name} = req.body;
+  const { name } = req.body;
+
   try {
-    if (!name ) {
-       res.status(400).send("Invalid input data");
+    if (!name) {
+      res.status(400).send("Invalid input data");
     }
 
     if (!req.user?.userId) {
@@ -54,22 +98,11 @@ export const createZap = async (req: Request, res: Response) => {
     const zap = await prisma.zap.create({
       data: {
         name,
-        userId: req.user?.userId as string, 
-       
+        userId: req.user.userId,
       },
     });
 
-    console.log(zap)
-
-    if(zap){
-
-      
-      res.status(201).json(zap);
-    }else{
-
-      
-      res.send(500).json({"error":"this is a error"})
-    }
+    res.status(201).json(zap);
   } catch (e) {
     console.error(e);
     res.status(500).send("Something went wrong");
@@ -78,122 +111,155 @@ export const createZap = async (req: Request, res: Response) => {
 
 
 
-export const updateZapTrigger = async(req:Request,res:Response)=>{
-  const {triggerId} = req.body
-  const {zapid} = req.params
-
-  try{
-
-    
-    const zap =  await prisma.zap.findUnique({where:{id:zapid}})
-    if(zap){
-      // const newzap = await prisma.zap.update({where:{id:zapid},data:{
-      //   trigger:{
-      //     create:{
-      //       triggerId:triggerId,
-            
-      //     }
-      //   }
-        
-      // },select:{
-      //   id:true,
-      //   trigger:{
-          
-      //     select:{
-      //       id:true,
-      //       triggerId:true,
-      //       type:{
-      //         select:{
-      //           name:true
-      //         }
-      //       }
-      //     }
-      //   }
-      // }})
-
-      const trigger = await prisma.trigger.create({data:{
-        triggerId:triggerId,
-        zapId:zapid as string
-      }})
 
 
-      res.send(trigger)
-    }else{
-      res.send("zap not found")
+
+
+
+  export const updateZapTrigger = async (req: Request, res: Response) => {
+    const { triggerId } = req.body;
+    const { zapid } = req.params;
+  
+    try {
+      if (!triggerId) {
+         res.status(400).send("Missing trigger ID");
+      }
+  
+      const zap = await prisma.zap.findUnique({ where: { id: zapid } });
+  
+      if (!zap) {
+         res.status(404).send("Zap not found");
+      }
+  
+      const existingTrigger = await prisma.trigger.findFirst({
+        where: { zapId: zapid },
+      });
+  
+      let trigger;
+      if (existingTrigger) {
+        trigger = await prisma.trigger.update({
+          where: { id: existingTrigger.id },
+          data: { triggerId },
+        });
+      } else {
+        trigger = await prisma.trigger.create({
+          data: {
+            triggerId,
+            zapId: zapid as string,
+          },
+        });
+      }
+  
+      res.status(200).json(trigger);
+    } catch (e) {
+      console.error("Error while updating a zap trigger:", e);
+      res.status(500).send("Internal server error");
     }
-    
-  }catch(e){
-    console.log("error while updaiting a zap",e)
-    res.send("Internel server erro ").status(500)
-  }
+  };
+  
 
 
-
-
-}
-export const updateZapWorkflow = async (req:Request,res:Response) =>{
-
-
-  const {workflowid} = req.body
-  const {zapid} = req.params
-  console.log(workflowid)
-
-  try{
-
-    
-    const zap =  await prisma.zap.findUnique({where:{id:zapid}})
-    if(zap){
-
-
-      const newWorkflow = await prisma.workflow.create({data:{
-        workflowId:workflowid,
-        zapId:zapid as string
-      }})
-
-
-      return(workflowid)
-
-
-      // const newzap = await prisma.zap.update({
-      //   where: { id: zapid },
-      //   data: {
-      //     workflows: {
-      //       create: workflowids.map((workflowid: any, index: number) => {
-      
-      //         return {
-      //           workflowId: workflowid.workflowId, 
-
-      //         };
-      //       })
-      //     }
-      //   },select:{
-      //     id:true,
-      //     workflows:{
-      //       select:{
-      //         workflowId:true,
-      //         id:true,
-      //         type:{
-      //           select:{
-      //             name:true
-      //           }
-      //         }
-      //       }
-      //     }
-          
-      //   }
-      // });
-      // console.log(newzap)
-      
-      // res.send(newzap)
-    }else{
-      res.send("zap not found")
+  export const updateZapWorkflow = async (req: Request, res: Response) => {
+    const { workflowid } = req.body;
+    const { zapid } = req.params;
+  
+    try {
+      if (!workflowid) {
+         res.status(400).send("Missing workflow ID");
+      }
+  
+      const zap = await prisma.zap.findUnique({ where: { id: zapid } });
+  
+      if (!zap) {
+         res.status(404).send("Zap not found");
+      }
+  
+      const existingWorkflow = await prisma.workflow.findFirst({
+        where: { zapId: zapid },
+      });
+  
+      let workflow;
+      if (existingWorkflow) {
+        workflow = await prisma.workflow.update({
+          where: { id: existingWorkflow.id },
+          data: { workflowId: workflowid.workflowId },
+        });
+      } else {
+        workflow = await prisma.workflow.create({
+          data: {
+            workflowId: workflowid.workflowId,
+            zapId: zapid as string,
+          },
+        });
+      }
+  
+      res.status(200).json(workflow);
+    } catch (e) {
+      console.error("Error while updating a zap workflow:", e);
+      res.status(500).send("Internal server error");
     }
-    
-  }catch(e){
-    console.log("error while updaiting a zap",e)
-    res.send("Internel server erro ").status(500)
+  };
+  
+
+  
+  export const getTriggerDetails = async (req: Request, res: Response) => {
+    const { id } = req.params;
+  
+    try {
+      const trigger = await prisma.trigger.findUnique({
+        where: { id },
+        select:{
+          id:true,
+          accessToken:true,
+          metaData:true,
+          type:{
+            select:{
+              name:true
+            }
+          }
+        }
+      });
+  
+      if (!trigger) {
+         res.status(404).json({ error: "Trigger not found" });
+      }else {
+        res.json({ trigger: { ...trigger, auth: trigger?.accessToken ? true : false,accessToken:"" } });
+      }
+    } catch (e) {
+      console.error("Error fetching trigger details:", e);
+      res.status(500).send("Internal server error");
+    }
+  };
+  
+
+
+export const getWorkflowDetails = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const workflow = await prisma.workflow.findUnique({
+      where: { id },
+    select:{
+      id:true,
+      accessToken:true,
+      metaData:true,
+      type:{
+        select:{
+          name:true
+        }
+      }
+    }
+    });
+
+    if (!workflow) {
+       res.status(404).json({ error: "Workflow not found" });
+    }else {
+
+      
+      res.json({ workflow: { ...workflow, auth: workflow?.accessToken ? true : false ,accessToken:""} });
+    }
+  } catch (e) {
+    console.error("Error fetching workflow details:", e);
+    res.status(500).send("Internal server error");
   }
-
-
-
-}
+};

@@ -7,6 +7,7 @@ interface WorkflowStep {
   app: string
   subtype: string
   id :string
+  auth:boolean
 }
 
 interface WorkflowContextType {

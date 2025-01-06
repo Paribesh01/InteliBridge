@@ -28,7 +28,7 @@ export default function SelectApp({ type, selectedApp, onSelectApp }: SelectAppP
         type === "trigger"
           ? { triggerId: flowid }
           : { workflowid: { workflowId: flowid } };
-
+        console.log("this ithe data send", data)
       const response:any = await axios.post(url, data, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -65,7 +65,7 @@ export default function SelectApp({ type, selectedApp, onSelectApp }: SelectAppP
           console.log("Selected value:", value);
           const selectedApps = apps.find((app) => app.name === value);
           if (selectedApps) {
-              
+              console.log ("this is the selected app", selectedApps)
               const res = await handleAdd(selectedApps.id)
               const updatedApp = { ...selectedApp, app: value, id: res.data.id};
               console.log("Updated app object:", updatedApp);
