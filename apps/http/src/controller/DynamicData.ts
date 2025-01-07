@@ -32,7 +32,6 @@ let token
         }
 
         const dynamicData = await getDymanicDataforapp(app as string,token as string)
-        console.log("dymanic data is here",dynamicData)
         res.send({dynamicData})
 
     }catch(e){

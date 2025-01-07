@@ -127,6 +127,12 @@ const resp = await createWebhookHelper(app as string,flow?.accessToken as string
   //   });
   console.log(resp)
     console.log("Web hook is created...");
+
+
+    const newzap = await prisma.trigger.update({where:{id},data:{
+      set:true
+    }})
+
   // } else {
   //   console.log("app is not supprted ");
 

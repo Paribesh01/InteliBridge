@@ -1,22 +1,25 @@
 
 import path from 'path';
 
-const APPS_FOLDER = path.resolve(__dirname, 'apps');
+const APPS_FOLDER = path.resolve(__dirname, '../apps');
 
 const fileName = "createWebhook"
 export const createWebhookHelper = async (app:string,token:string,metaData:any,zapid:string,userid:string) => {
   try {
-    const filePath = path.join(APPS_FOLDER, app, `${fileName}.js`);
+    const filePath = path.join(APPS_FOLDER, app, `${fileName}.mjs`);
     console.log('Attempting to load file from path:', filePath);
 
     const module = await import(filePath);
+    console.log(module.default)
 
-    if (!module.default || !module.default.default || typeof module.default.default !== 'function') {
+    if (!module.default || typeof module.default !== 'function') {
       throw new Error(
         `No default function found in file "${fileName}" for app "${app}".`
       );
     }
-     const functionToRun = module.default.default;
+     const functionToRun = module.default;
+     console.log(module)
+     console.log(module.default)
     
      const result = await functionToRun(token,metaData,zapid,userid);
     return result

@@ -215,7 +215,7 @@ const {id} = useParams()
         {currentStep === 2 && <OAuthSetup selectedApp={currentConfig} />}
         {currentStep === 3 && <SelectDynamicData             selectedApp={currentConfig}
  />}
-        {currentStep === 4 && <ConfirmSetup onConfirm={handleConfirm} />}
+        {currentStep === 4 && <ConfirmSetup selectedApp={currentConfig} onConfirm={handleConfirm} />}
       </div>
       <div className="flex justify-between">
         <Button onClick={handlePrevious} disabled={currentStep === 0}>

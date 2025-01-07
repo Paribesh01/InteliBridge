@@ -46,6 +46,7 @@ model Trigger {
   metaData Json?
   zapId       String @unique
   zap         Zap      @relation(fields: [zapId], references: [id])
+  set Boolean @default(false)
   type AvailableTrigger @relation(fields: [triggerId], references: [id])
 
 }

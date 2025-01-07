@@ -13,7 +13,7 @@ dotenv.config();
       events: { ISSUE: "issues" },
       secret: process.env.JSONSECRET,
     },
-    triggers:["new-pullrequest","new-issue"],
+    triggers:["pull_request","issues"],
     workflows:["create-issue"]
   }
 

@@ -13,7 +13,6 @@ const fetchRepos = async(token)=> {
     });
 
     const repos = response.data;
-    console.log(repos)
     return repos
   } catch (error) {
     if (error.response) {

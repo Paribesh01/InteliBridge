@@ -169,29 +169,29 @@ export const createZap = async (req: Request, res: Response) => {
       }
   
       const zap = await prisma.zap.findUnique({ where: { id: zapid } });
-  
       if (!zap) {
          res.status(404).send("Zap not found");
       }
   
-      const existingWorkflow = await prisma.workflow.findFirst({
+
+      const maxIndexWorkflow = await prisma.workflow.findFirst({
         where: { zapId: zapid },
+        orderBy: { index: "desc" }, 
       });
   
-      let workflow;
-      if (existingWorkflow) {
-        workflow = await prisma.workflow.update({
-          where: { id: existingWorkflow.id },
-          data: { workflowId: workflowid.workflowId },
-        });
-      } else {
-        workflow = await prisma.workflow.create({
-          data: {
-            workflowId: workflowid.workflowId,
-            zapId: zapid as string,
-          },
-        });
+      let newIndex = 0;
+      if (maxIndexWorkflow) {
+        newIndex = maxIndexWorkflow.index + 1; 
       }
+  
+      
+      const workflow = await prisma.workflow.create({
+        data: {
+          workflowId: workflowid,
+          zapId: zapid as string,
+          index: newIndex, 
+        },
+      });
   
       res.status(200).json(workflow);
     } catch (e) {
