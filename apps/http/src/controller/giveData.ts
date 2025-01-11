@@ -11,13 +11,11 @@ export const giveSubTriggers = async(req:Request,res:Response)=>{
     const {app} = req.params
 
     try{
-
         const data = await getSubTrigger(app as string)
         if(!data){
             res.send("app is not there")
             console.log("app is not there")
         }
-
         console.log("this is for trigger",data)
         res.json(data)
 
@@ -26,15 +24,10 @@ export const giveSubTriggers = async(req:Request,res:Response)=>{
         res.send("internel server error")
     }
 
-
-
-
 }
 
 export const giveSubWokflows =async (req:Request,res:Response)=>{
-
     const {app} = req.params
-
     try{
 
         const data = await getSubWorkflows(app as string)
@@ -46,8 +39,4 @@ export const giveSubWokflows =async (req:Request,res:Response)=>{
         console.log("error while giving a subtrigger")
         res.send("internel server error")
     }
-
-
-
-
 }

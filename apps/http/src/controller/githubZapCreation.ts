@@ -7,7 +7,6 @@ import { Request, Response } from 'express';
 export function installGithubApp(req: Request, res: Response): void {
     const installationUrl = `https://github.com/apps/InteliBridge/installations/new`;
     res.redirect(installationUrl);
-
 }
 
 
