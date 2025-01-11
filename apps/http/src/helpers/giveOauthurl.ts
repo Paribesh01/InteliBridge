@@ -4,8 +4,6 @@ const APPS_FOLDER = path.resolve(__dirname, '..', '..', 'src', 'apps');
 
 export const giveoauthurl = async (app: string, state: string) => {
 
-
-
   try {
     const fileName = 'index'; 
     
