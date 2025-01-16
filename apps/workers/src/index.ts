@@ -2,9 +2,21 @@ import client from "@repo/db";
 import { createClient } from "redis";
 import { SendMail } from "./email";
 
-const redisClient = createClient();
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
+}
 
-(async () => {
+
+async function sleep(ms: number) {
+  console.log("Worker starting...", process.env.REDIS_URL);
+
+  if (!process.env.REDIS_URL) {
+    throw new Error("Please set REDIS_URL in the environment variable");
+  }
+
+  const redisClient = createClient({
+    url: process.env.REDIS_URL,
+  });
   await redisClient.connect();
 
   console.log("Worker started. Waiting for tasks...");
@@ -35,4 +47,6 @@ const redisClient = createClient();
     console.log("this is the Zap Details");
     console.log(zapDetails);
   }
-})();
+}
+
+sleep(200);
