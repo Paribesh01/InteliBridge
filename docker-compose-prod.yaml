@@ -1,28 +1,55 @@
-
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3000:3000" 
+      - "3000:3000"
+      - "5173:5173"
+      - "8000:8000"
     environment:
       - NODE_ENV=production
+      - DATABASE_URL=postgresql://myuser:mypassword@postgres:5432/mydatabase
+      - REDIS_URL=redis://redis:6379
     env_file:
       - .env
     depends_on:
-      - postgres
-    restart: always
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   postgres:
-    image: postgres:15-alpine
-    env_file:
-      - .env
+    image: postgres
     ports:
-      - "5432:5432" 
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d mydatabase"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
+  redis_data:
+
+# DATABASE_URL=postgresql://myuser:mypassword@postgres:5432/mydatabase
+
