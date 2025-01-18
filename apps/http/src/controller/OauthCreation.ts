@@ -1,42 +1,35 @@
 import { Request, Response } from "express";
 import axios from "axios";
-let octokit:any
+let octokit: any;
 async function main() {
   const { Octokit } = await import("octokit");
-  octokit = Octokit
+  octokit = Octokit;
 }
-main()
+main();
 import prisma from "../db";
 import { giveoauthurl } from "../helpers/giveOauthurl";
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 import { createWebhookHelper } from "../helpers/createWebhook";
 import { giveAccessToken } from "../helpers/giveAcessTokenurl";
 dotenv.config();
 
+export const OAuth = async (req: Request, res: Response) => {
+  console.log("here");
+  const { app, id } = req.params;
 
-
-
-export const OAuth = async(req: Request, res: Response) => {
-  console.log("here")
-  const { app,id } = req.params;
-  
-  
-  
   try {
     // if (app == "github") {
-      //   redirectUri = `https://github.com/login/oauth/authorize?client_id=${client_id}&redirect_uri=${redirect_uri}&state=${id}`;
-      // } else {
-        //   console.log("app is not there in our system");
-        //   res.send("invalid app");
-        // }
-        const redirect_uri = await giveoauthurl(app as string,id as string)
+    //   redirectUri = `https://github.com/login/oauth/authorize?client_id=${client_id}&redirect_uri=${redirect_uri}&state=${id}`;
+    // } else {
+    //   console.log("app is not there in our system");
+    //   res.send("invalid app");
+    // }
+    const redirect_uri = await giveoauthurl(app as string, id as string);
 
-        console.log(redirect_uri)
-    res.json({redirectUrl:redirect_uri});
+    console.log(redirect_uri);
+    res.json({ redirectUrl: redirect_uri });
   } catch {}
 };
-
-
 
 export const callback = async (req: Request, res: Response) => {
   const { code, state } = req.query;
@@ -47,10 +40,10 @@ export const callback = async (req: Request, res: Response) => {
   }
 
   try {
-    console.log("1 ",code)
-    const response = await  giveAccessToken(app as string, code as string);
+    console.log("1 ", code);
+    const response = await giveAccessToken(app as string, code as string);
 
-    const { access_token, refresh_token } = response;  
+    const { access_token, refresh_token, ...others } = response;
     console.log("State:", state);
     console.log("Access Token:", access_token);
 
@@ -72,10 +65,13 @@ export const callback = async (req: Request, res: Response) => {
           data: {
             accessToken: access_token,
             refreshToken: refresh_token || "",
+            metaData: {
+              ...(trigger.metaData as object),
+              ...others,
+            },
           },
         });
         console.log("Trigger updated successfully");
-
       }
     } else {
       await prisma.workflow.update({
@@ -83,18 +79,22 @@ export const callback = async (req: Request, res: Response) => {
         data: {
           accessToken: access_token,
           refreshToken: refresh_token || "",
+          metaData: {
+            ...(workflow.metaData as object),
+            ...others,
+          },
         },
       });
       console.log("Workflow updated successfully");
     }
     res.send("Done, you may close this window");
-
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Error during OAuth exchange:", error);
-    res.status(500).send(error.message || "An error occurred during the OAuth process");
+    res
+      .status(500)
+      .send(error.message || "An error occurred during the OAuth process");
   }
 };
-
 
 export const createWebhook = async (req: Request, res: Response) => {
   const { app } = req.params;
@@ -103,14 +103,15 @@ export const createWebhook = async (req: Request, res: Response) => {
   const flow = await prisma.trigger.findUnique({ where: { id } });
   const zap = await prisma.zap.findUnique({ where: { id: zapid } });
 
-  
+  console.log(flow?.accessToken);
 
-
-
-
-  console.log(flow?.accessToken)
-
-const resp = await createWebhookHelper(app as string,flow?.accessToken as string,flow?.metaData as any,zapid as string,req.user?.userId as string)
+  const resp = await createWebhookHelper(
+    app as string,
+    flow?.accessToken as string,
+    flow?.metaData as any,
+    zapid as string,
+    req.user?.userId as string
+  );
   // if (app == "github") {
   //   const client = new octokit({ auth: flow?.accessToken });
   //   const response = await client.request("POST /repos/Paribesh01/2d-Metaverse/hooks",{
@@ -125,13 +126,15 @@ const resp = await createWebhookHelper(app as string,flow?.accessToken as string
   //       secret: "your-webhook-secret",
   //     },
   //   });
-  console.log(resp)
-    console.log("Web hook is created...");
+  console.log(resp);
+  console.log("Web hook is created...");
 
-
-    const newzap = await prisma.trigger.update({where:{id},data:{
-      set:true
-    }})
+  const newzap = await prisma.trigger.update({
+    where: { id },
+    data: {
+      set: true,
+    },
+  });
 
   // } else {
   //   console.log("app is not supprted ");

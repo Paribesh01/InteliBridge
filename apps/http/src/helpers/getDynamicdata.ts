@@ -1,4 +1,3 @@
-
 // import path from 'path';
 
 // const APPS_FOLDER = path.resolve(__dirname, '../apps');
@@ -17,7 +16,7 @@
 //       );
 //     }
 //      const functionToRun = module.default;
-    
+
 //      const result = await functionToRun(token);
 //     return result
 
@@ -27,36 +26,38 @@
 //   }
 // };
 
+import path from "path";
+import { pathToFileURL } from "url";
 
-import path from 'path';
-import { pathToFileURL } from 'url';
-
-const APPS_FOLDER = path.resolve(__dirname, '../apps');
-const fileName = "dynamicData"
-export const getDymanicDataforapp = async (app: string,token:string) => {
+const APPS_FOLDER = path.resolve(__dirname, "../apps");
+const fileName = "dynamicData";
+export const getDymanicDataforapp = async (
+  app: string,
+  token: string,
+  metaData: any
+) => {
   try {
-
     const filePath = path.join(APPS_FOLDER, app, `${fileName}.mjs`);
     const fileURL = pathToFileURL(filePath).href;
 
-    console.log('Attempting to load file from path:', filePath);
-
+    console.log("Attempting to load file from path:", filePath);
 
     const module = await import(fileURL);
 
-
-    if (!module.default || typeof module.default !== 'function') {
+    if (!module.default || typeof module.default !== "function") {
       throw new Error(
         `No default function found in file "${fileName}" for app "${app}".`
       );
     }
 
-
-    const result = await module.default(token);
+    const result = await module.default(token, metaData);
 
     return result;
   } catch (error) {
-    console.error(`Error logging default function from "${fileName}" for app "${app}":`, error);
+    console.error(
+      `Error logging default function from "${fileName}" for app "${app}":`,
+      error
+    );
     throw error;
   }
 };

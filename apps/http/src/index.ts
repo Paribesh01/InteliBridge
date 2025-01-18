@@ -1,11 +1,11 @@
 import express from "express";
 import cors from "cors";
 import router from "./routes";
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 import { giveoauthurl } from "./helpers/giveOauthurl";
 
 // Load environment variables from .env file
-dotenv.config(); 
+dotenv.config();
 
 const app = express();
 
@@ -16,15 +16,13 @@ app.use(express.json());
 app.use("/api/v1", router);
 
 // Use the environment variable for the port
-const port =   8000 // Fallback to 8000 if PORT is not set
+const port = 8000; // Fallback to 8000 if PORT is not set
 
-    console.log(process.env.GithubclientID)
+console.log(process.env.GithubclientID);
 
-
-app.listen(port, async() => {
-    console.log(`Listening on port ${port}`);
-    console.log(await giveoauthurl("github","Fafadfadsf"))
-
+app.listen(port, async () => {
+  console.log(`Listening on port ${port}`);
+  console.log(await giveoauthurl("github", "Fafadfadsf"));
 });
 
 // import path from 'path';
@@ -47,7 +45,7 @@ app.listen(port, async() => {
 //     }
 //      // Get the function
 //      const functionToRun = module.default.default;
-    
+
 //      // Run the function with the provided code
 //      const result = await functionToRun();
 //         console.log(result)

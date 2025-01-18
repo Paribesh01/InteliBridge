@@ -1,18 +1,22 @@
 import axios from "axios";
 
-const url = "https://api.github.com/user/repos";
+const url = "https://slack.com/api/conversations.list";
 
-const fetchRepos = async (token, metaData) => {
+const fetchSlackChannels = async (token) => {
   try {
     const response = await axios.get(url, {
       headers: {
         Authorization: `Bearer ${token}`,
-        Accept: "application/vnd.github.v3+json",
+        "Content-Type": "application/json",
       },
     });
 
-    const repos = response.data;
-    return repos;
+    if (!response.data.ok) {
+      throw new Error(`Slack API Error: ${response.data.error}`);
+    }
+
+    const channels = response.data.channels;
+    return channels;
   } catch (error) {
     if (error.response) {
       console.error(
@@ -24,4 +28,4 @@ const fetchRepos = async (token, metaData) => {
   }
 };
 
-export default fetchRepos;
+export default fetchSlackChannels;
