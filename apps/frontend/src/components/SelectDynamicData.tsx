@@ -8,7 +8,7 @@ interface dynamicDataProp {
 interface DynamicData {
   id: string;
   name: string;
-  [key: string]: any; 
+  [key: string]: any;
 }
 
 export default function SelectDynamicData({ selectedApp }: dynamicDataProp) {
@@ -20,21 +20,30 @@ export default function SelectDynamicData({ selectedApp }: dynamicDataProp) {
       const response: any = await axios.get(
         `http://localhost:8000/api/v1/dynamicData/${selectedApp.id}/${selectedApp.app}`
       );
-      setDynamicData(response.data.dynamicData); 
+      setDynamicData(response.data.dynamicData);
       console.log("this is the dynamic data", response.data);
     } catch (error) {
       console.error("Error fetching dynamic data:", error);
     }
   };
 
-  const handleSelectChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedValue = e.target.value;
-    setSelectedData(selectedValue);
+  const handleSelectChange = async (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const selectedName = e.target.value;
+    setSelectedData(selectedName);
+
+    const selectedItem = dynamicData.find((data) => data.name === selectedName);
+
+    if (!selectedItem) {
+      console.error("Selected item not found!");
+      return;
+    }
 
     try {
       const response = await axios.post(
         `http://localhost:8000/api/v1/dynamicData/${selectedApp.id}`,
-        { dynamicData: selectedValue }
+        { dynamicData: { id: selectedItem.id, name: selectedItem.name } }
       );
       console.log("Data submitted successfully:", response.data);
     } catch (error) {
@@ -53,7 +62,7 @@ export default function SelectDynamicData({ selectedApp }: dynamicDataProp) {
         {dynamicData.length > 0 ? (
           <select
             value={selectedData}
-            onChange={handleSelectChange} 
+            onChange={handleSelectChange}
             className="w-full border rounded-md p-2"
           >
             <option value="">Select an option</option>
