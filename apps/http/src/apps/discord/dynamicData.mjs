@@ -7,7 +7,7 @@ const fetchTextChannels = async (accessToken, metaData) => {
   try {
     const response = await axios.get(url, {
       headers: {
-        Authorization: `Bot MTMyOTU0NTc2OTA2NTI1MDk2OQ.GIPDqH.Osw7jSDYnp-xDDzNfgrz9Y5UEEtOTJpSVNGhQ0`,
+        Authorization: `Bot ${DISCORDBOTTOKEN}`,
         Accept: "application/json",
       },
     });
