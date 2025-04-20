@@ -13,6 +13,28 @@ import { createWebhookHelper } from "../helpers/createWebhook";
 import { giveAccessToken } from "../helpers/giveAcessTokenurl";
 dotenv.config();
 
+export const isAuth = async (req: Request, res: Response) => {
+  const { id, app } = req.params;
+  const workflow = await prisma.workflow.findUnique({ where: { id } });
+  const trigger = await prisma.trigger.findUnique({ where: { id } });
+
+  if (workflow) {
+    if (workflow.accessToken) {
+      res.send({ isAuth: true });
+    } else {
+      res.send({ isAuth: false });
+    }
+  } else if (trigger) {
+    if (trigger.accessToken) {
+      res.send({ isAuth: true });
+    } else {
+      res.send({ isAuth: false });
+    }
+  } else {
+    res.send({ isAuth: false });
+  }
+};
+
 export const OAuth = async (req: Request, res: Response) => {
   console.log("here");
   const { app, id } = req.params;
