@@ -1,3 +1,5 @@
+import prisma from "@/db";
+import { compare } from "bcryptjs";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 export const authOptions = {
@@ -18,12 +20,33 @@ export const authOptions = {
         },
       },
       async authorize(credentials) {
-        // You should add your logic to validate the credentials here
-        // For now, let's just do a dummy check
-        if (credentials?.email && credentials?.password) {
-          return { id: "1", email: credentials.email };
+        if (!credentials) {
+          throw new Error("Invalid credentials");
         }
-        return null;
+
+        let user;
+        try {
+          user = await prisma.user.findUnique({
+            where: {
+              email: credentials?.email,
+            },
+          });
+        } catch (e) {
+          console.error(e);
+          throw Error("Internal server error. Please try again later");
+        }
+        if (!user) {
+          throw new Error("Invalid credentials");
+        }
+        const isValid = await compare(credentials.password, user.password);
+        if (!isValid) {
+          throw new Error("Invalid credentials");
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+        };
       },
     }),
   ],

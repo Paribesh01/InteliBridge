@@ -1,5 +1,6 @@
 "use server";
 import prisma from "@/db";
+import { hash } from "bcryptjs";
 import { z } from "zod";
 
 const ZSignupInput = z.object({
@@ -23,12 +24,13 @@ export const createUser = async (data: TSignupInput) => {
     console.log(existingUser);
     throw new Error("User already exists");
   }
+  const hashedPassword = await hash(validatedData.password, 12);
 
   const user = await prisma.user.create({
     data: {
       email: validatedData.email,
       name: validatedData.name,
-      password: validatedData.password,
+      password: hashedPassword,
     },
   });
 
