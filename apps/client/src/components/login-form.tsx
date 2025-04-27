@@ -43,19 +43,25 @@ export default function LoginForm() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      await signIn("credentials", {
+      const res = await signIn("credentials", {
         callbackUrl: "/",
         email: data.email.toLowerCase(),
         password: data.password,
-
-        redirect: true,
+        redirect: false,
       });
-      toast.success("Login successful");
+
+      if (res?.error) {
+        toast.error(res.error);
+      } else {
+        toast.success("Login successful");
+        window.location.href = res?.url || "/";
+      }
     } catch (error: any) {
-      console.error("Signup failed:", error);
-      toast.error(error.message);
+      console.error("Login failed:", error);
+      toast.error(error.message || "Something went wrong");
     }
   };
+
   return (
     <div className="flex flex-col gap-6">
       <Card>
