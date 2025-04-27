@@ -5,7 +5,8 @@ import dotenv from "dotenv";
 import { giveoauthurl } from "./helpers/giveOauthurl";
 
 // Load environment variables from .env file
-dotenv.config();
+require('dotenv').config({ path: "../../.env" })
+
 
 const app = express();
 
