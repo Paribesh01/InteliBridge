@@ -3,7 +3,7 @@ import { createClient } from "redis";
 import { SendMail } from "./email";
 
 if (process.env.NODE_ENV !== "production") {
-  require("dotenv").config();
+  require('dotenv').config({ path: "../../.env" })
 }
 
 
