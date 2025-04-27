@@ -9,7 +9,7 @@ export async function middleware(request: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET,
   });
 
-  const isPublicRoute = ["/auth/login", "/auth/register"].includes(pathname);
+  const isPublicRoute = ["/auth/login", "/auth/signup"].includes(pathname);
 
   if (isPublicRoute && token) {
     return NextResponse.redirect(new URL("/", request.url));
