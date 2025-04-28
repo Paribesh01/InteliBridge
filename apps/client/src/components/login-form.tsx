@@ -139,7 +139,7 @@ export default function LoginForm() {
                 href="/auth/signup"
                 className="underline underline-offset-4"
               >
-                Sign up
+                Log In
               </Link>
             </div>
           </FormProvider>
