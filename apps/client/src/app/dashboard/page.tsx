@@ -1,8 +1,7 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { DashboardTabs } from "@/components/dashboard-tabs";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { CreateZapButton } from "@/components/create-zap-button";
 
 export default async function Dashboard() {
   const session = await getServerSession();
@@ -20,10 +19,7 @@ export default async function Dashboard() {
             Manage and monitor your automated workflows
           </p>
         </div>
-        <Button className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          <span>New Zap</span>
-        </Button>
+        <CreateZapButton />
       </div>
       
       {/* Main dashboard content with tabs */}
