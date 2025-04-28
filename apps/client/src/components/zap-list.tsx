@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useZaps } from "@/hooks/useZaps";
 import { ZapCard } from "@/components/zap-card";
 import { Button } from "@/components/ui/button";
+import { CreateZapButton } from "./create-zap-button";
 
 export function ZapList() {
   const {
@@ -66,7 +67,7 @@ export function ZapList() {
     return (
       <div className="flex flex-col items-center justify-center h-64">
         <p className="text-gray-500 mb-4">No zaps found</p>
-        <Button>Create Your First Zap</Button>
+        <CreateZapButton/>
       </div>
     );
   }
