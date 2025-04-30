@@ -44,7 +44,13 @@ export const authOptions: NextAuthOptions = {
         if (!isValid) {
           throw new Error("Invalid credentials");
         }
-        const token = jwt.sign(user, process.env.NEXTAUTH_SECRET as string);
+
+        const { password, ...userWithoutPassword } = user;
+
+        const token = jwt.sign(
+          userWithoutPassword,
+          process.env.NEXTAUTH_SECRET as string
+        );
 
         return {
           id: user.id,
