@@ -15,8 +15,10 @@ const queryClient = new QueryClient({
 
 export function Providers({ children }: { children: any }) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <SessionProvider>{children}</SessionProvider>
-    </QueryClientProvider>
+
+    <SessionProvider>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </SessionProvider>
+
   );
 }

@@ -41,6 +41,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Invalid credentials");
         }
         const isValid = await compare(credentials.password, user.password);
+        
         if (!isValid) {
           throw new Error("Invalid credentials");
         }
@@ -66,22 +67,31 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
+
     async jwt({ token, user }: any) {
       if (user) {
         token.id = user.id;
         token.name = user.name;
         token.email = user.email;
+
         token.jwtToken = user.jwtToken;
+
       }
+      
       return token;
     },
     async session({ session, token }: any) {
+
       if (session.user) {
         session.user.id = token.id;
         session.user.name = token.name;
         session.user.email = token.email;
+
         session.user.jwtToken = token.jwtToken;
+
       }
+
+      
       return session;
     },
   },
