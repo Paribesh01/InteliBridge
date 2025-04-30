@@ -2,6 +2,8 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Zap } from "@/types";
+import api from "@/lib/axios_instance";
+import { useSession } from "next-auth/react";
 
 interface CreateZapInput {
   name: string;
@@ -12,27 +14,36 @@ interface CreateZapInput {
 
 export function useCreateZap() {
   const queryClient = useQueryClient();
-  
+  const { data: session, status } = useSession();
+
   return useMutation<Zap, Error, CreateZapInput>({
     mutationFn: async (data) => {
-      const response = await fetch("/api/zaps", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to create zap");
+      if (status !== "authenticated") {
+        throw new Error("Unauthorized: No valid session");
       }
-      
-      return response.json();
+
+      const accessToken = session?.accessToken;
+      if (!accessToken) {
+        throw new Error("Unauthorized: No access token available");
+      }
+
+      try {
+        const response = await api.post("/zap", data, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
+        return response.data as Zap;
+      } catch (error) {
+        console.log(error)
+        throw new Error("Failed to create zap");
+      }
     },
     onSuccess: () => {
       // Invalidate the zaps query to refetch the list
       queryClient.invalidateQueries({ queryKey: ["zaps"] });
     },
   });
-} 
+}

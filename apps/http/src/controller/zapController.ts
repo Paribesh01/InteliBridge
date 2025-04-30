@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
 import prisma from "../db";
-import { date, string } from "zod";
-import { giveAccessToken } from "../helpers/giveAcessTokenurl";
 
 export const GetAllZap = async (req: Request, res: Response) => {
   try {
@@ -23,6 +21,54 @@ export const GetAllZap = async (req: Request, res: Response) => {
   } catch (e) {
     console.error(e);
     res.status(500).send("Something went wrong");
+  }
+};
+
+export const getAllZapsWithPagination = async (req: Request, res: Response):Promise<any> => {
+  try {
+
+    const userId = req.user?.userId;
+    const url = new URL(req.url);
+    const cursor = url.searchParams.get("cursor");
+    const limit = parseInt(url.searchParams.get("limit") || "10", 10);
+
+    // Query for zaps with pagination
+    const zaps = await prisma.zap.findMany({
+      where: { userId },
+      take: limit,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      include: {
+        trigger: {
+          include: {
+            type: true,
+          },
+        },
+        workflows: {
+          include: {
+            type: true,
+          },
+          orderBy: {
+            index: "asc",
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    // Get the last item for next cursor
+    const lastZap = zaps[zaps.length - 1];
+    const nextCursor = lastZap?.id;
+
+    return res.json({
+      zaps,
+      nextCursor,
+      hasMore: zaps.length === limit,
+    });
+  } catch (error) {
+    console.error("Error fetching zaps:", error);
+    return res.status(500).json({ error: "Failed to fetch zaps" });
   }
 };
 
@@ -250,5 +296,54 @@ export const getWorkflowDetails = async (req: Request, res: Response) => {
   } catch (e) {
     console.error("Error fetching workflow details:", e);
     res.status(500).send("Internal server error");
+  }
+};
+
+export const deleteZap = async (req: Request, res: Response):Promise<any> => {
+  try {
+    const userId = req.user?.userId;
+    const zapId = req.params.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    if (!zapId) {
+      return res.status(400).json({ error: "Zap ID is required" });
+    }
+
+    const zap = await prisma.zap.findFirst({
+      where: {
+        id: zapId,
+        userId,
+      },
+    });
+
+    if (!zap) {
+      return res.status(500).json({ error: "Zap not found" });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.webhookZap.deleteMany({
+        where: { zapId },
+      });
+
+      await tx.workflow.deleteMany({
+        where: { zapId },
+      });
+
+      await tx.trigger.deleteMany({
+        where: { zapId },
+      });
+
+      await tx.zap.delete({
+        where: { id: zapId },
+      });
+    });
+
+    return res.status(200).json({ message: "Zap successfully deleted" });
+  } catch (error) {
+    console.error("Error deleting zap:", error);
+    return res.status(500).json({ error: "Failed to delete zap" });
   }
 };

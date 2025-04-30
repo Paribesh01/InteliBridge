@@ -1,26 +1,37 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
+import api from "@/lib/axios_instance";
 
 export function useDeleteZap() {
   const queryClient = useQueryClient();
-  
+  const { data: session, status } = useSession();
+
   return useMutation({
     mutationFn: async (zapId: string) => {
-      const response = await fetch(`/api/zaps/${zapId}`, {
-        method: "DELETE",
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to delete zap");
+
+      if (status !== "authenticated" || !session) {
+        throw new Error("Unauthorized: No valid session");
       }
-      
-      return response.json();
+
+
+      const accessToken = session.accessToken;
+
+      if (!accessToken) {
+        throw new Error("Unauthorized: No access token available");
+      }
+
+      const response = await api.delete(`/zap/${zapId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      return response.data;
     },
     onSuccess: () => {
-      // Invalidate the zaps query to refetch the list
       queryClient.invalidateQueries({ queryKey: ["zaps"] });
     },
   });
-} 
+}
