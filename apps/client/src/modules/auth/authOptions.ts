@@ -2,6 +2,7 @@ import prisma from "@/db";
 import { compare } from "bcryptjs";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import jwt from "jsonwebtoken";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -43,11 +44,13 @@ export const authOptions: NextAuthOptions = {
         if (!isValid) {
           throw new Error("Invalid credentials");
         }
+        const token = jwt.sign(user, process.env.NEXTAUTH_SECRET as string);
 
         return {
           id: user.id,
           name: user.name,
           email: user.email,
+          jwtToken: token,
         };
       },
     }),
@@ -62,6 +65,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.name = user.name;
         token.email = user.email;
+        token.jwtToken = user.jwtToken;
       }
       return token;
     },
@@ -70,6 +74,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id;
         session.user.name = token.name;
         session.user.email = token.email;
+        session.user.jwtToken = token.jwtToken;
       }
       return session;
     },

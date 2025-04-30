@@ -2,10 +2,11 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { DashboardTabs } from "@/components/dashboard-tabs";
 import { CreateZapButton } from "@/components/create-zap-button";
+import { authOptions } from "@/modules/auth/authOptions";
 
 export default async function Dashboard() {
-  const session = await getServerSession();
-
+  const session = await getServerSession(authOptions);
+  console.log("session", session?.user?.jwtToken);
   if (!session) {
     redirect("/login");
   }
@@ -21,10 +22,9 @@ export default async function Dashboard() {
         </div>
         <CreateZapButton />
       </div>
-      
+
       {/* Main dashboard content with tabs */}
       <DashboardTabs />
     </div>
   );
 }
-    
