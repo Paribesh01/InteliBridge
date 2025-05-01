@@ -1,4 +1,3 @@
-
 import axios from "axios";
 
 // Create the Axios instance with the base URL

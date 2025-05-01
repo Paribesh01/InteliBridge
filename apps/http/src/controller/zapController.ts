@@ -33,12 +33,12 @@ export const getAllZapsWithPagination = async (
   res: Response
 ): Promise<any> => {
   try {
-    console.log("===============================");
 
-    const userId = (req as any).user?.userId; // assuming user is attached in middleware
 
+    const userId = req.user?.userId; 
     const cursor = req.query.cursor as string | undefined;
     const limit = parseInt((req.query.limit as string) || "10", 10);
+
 
     const zaps = await prisma.zap.findMany({
       where: { userId },
