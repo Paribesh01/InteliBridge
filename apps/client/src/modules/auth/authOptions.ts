@@ -59,7 +59,7 @@ export const authOptions: NextAuthOptions = {
 
         return {
           id: user.id,
-          name: user.name,
+          name: user.name || "", // Ensure name is always a string
           email: user.email,
           jwtToken: token,
         };
