@@ -14,35 +14,34 @@ interface CreateZapInput {
 
 export function useCreateZap() {
   const queryClient = useQueryClient();
-  const { data: session, status } = useSession();
+
+  const { data: session } = useSession();
 
   return useMutation<Zap, Error, CreateZapInput>({
     mutationFn: async (data) => {
-      if (status !== "authenticated") {
+      if (!session) {
         throw new Error("Unauthorized: No valid session");
-      }
-
-      const accessToken = session?.accessToken;
-      if (!accessToken) {
-        throw new Error("Unauthorized: No access token available");
       }
 
       try {
         const response = await api.post("/zap", data, {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${session?.user.jwtToken}`,
           },
         });
 
+        console.log("Zap response",response.data)
+
         return response.data as Zap;
       } catch (error) {
-        console.log(error)
+        console.log(error);
         throw new Error("Failed to create zap");
       }
     },
+       
+
     onSuccess: () => {
-      // Invalidate the zaps query to refetch the list
       queryClient.invalidateQueries({ queryKey: ["zaps"] });
     },
   });

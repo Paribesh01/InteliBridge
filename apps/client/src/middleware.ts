@@ -10,7 +10,6 @@ export async function middleware(request: NextRequest) {
   });
 
   const isPublicRoute = ["/auth/login", "/auth/signup"].includes(pathname);
-
   const home = pathname === "/";
 
   if (isPublicRoute && token) {
@@ -24,6 +23,7 @@ export async function middleware(request: NextRequest) {
   if (home && token) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
+
   return NextResponse.next();
 }
 

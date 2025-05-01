@@ -15,6 +15,8 @@ export const validateSchema = (schema: any) => {
             message: err.message,
           })),
         });
+
+        return;
       } else {
         next(error);
       }

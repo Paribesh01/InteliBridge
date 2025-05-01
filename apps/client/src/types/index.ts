@@ -38,6 +38,7 @@ export interface AvailableTrigger {
   name: string;
   image: string;
   subType?: string | null;
+  triggers : Trigger[];
 }
 
 export interface AvailableWorkflow {
@@ -45,4 +46,5 @@ export interface AvailableWorkflow {
   name: string;
   image: string;
   subType?: string | null;
+  workflow:Workflow[]
 } 

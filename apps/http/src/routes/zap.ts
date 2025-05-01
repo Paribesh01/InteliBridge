@@ -16,9 +16,9 @@ const ZapRouter = express.Router();
 
 ZapRouter.post("/", authenticateToken(), createZap);
 ZapRouter.get("/", authenticateToken(), GetAllZap);
+ZapRouter.get("/paged-zap", authenticateToken(), getAllZapsWithPagination);
 ZapRouter.get("/:id", authenticateToken(), GetOneZap);
 ZapRouter.delete("/:id",authenticateToken(),deleteZap)
-ZapRouter.get("/paged-zap", authenticateToken(), getAllZapsWithPagination);
 
 ZapRouter.post(
   "/updateZapWorkflow/:zapid",

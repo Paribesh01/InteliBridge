@@ -1,37 +1,28 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { AvailableWorkflow } from "@/types";
 import { useSession } from "next-auth/react";
 import api from "@/lib/axios_instance";
+import { AvailableWorkflow } from "@/types";
 
 export function useWorkflows() {
-  return useQuery<{ workflows: AvailableWorkflow[] }>({
+  const { data: session } = useSession();
+
+  return useQuery({
     queryKey: ["workflows"],
     queryFn: async () => {
-      const session = useSession();
-
-      if (session.status !== "authenticated") {
-        throw new Error("Unauthorized: No valid session");
-      }
-
-      const accessToken = session.data?.accessToken;
-      if (!accessToken) {
-        throw new Error("Unauthorized: No access token available");
-      }
+      if (!session) throw new Error("Unauthorized");
 
       const response = await api.get("/workflow/availableWorkflow", {
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${session.user.jwtToken}`,
         },
       });
 
-      if (!response.data) {
-        throw new Error("Failed to fetch workflows");
-      }
+      console.log(response.data)
 
       return response.data as { workflows: AvailableWorkflow[] };
     },
+    enabled: !!session, // only run if session is available
   });
 }
