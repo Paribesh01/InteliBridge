@@ -31,7 +31,6 @@ enum ZapCreationStep {
   CONFIRMATION = 5,
 }
 
-
 export function CreateZapForm({
   open,
   onOpenChange,
@@ -44,9 +43,11 @@ export function CreateZapForm({
   const [currentStep, setCurrentStep] = useState<ZapCreationStep>(
     ZapCreationStep.AVAILABLE_TRIGGER
   );
-  const [selectedAvailableTriggerId, setSelectedAvailableTriggerId] = useState<string>("");
+  const [selectedAvailableTriggerId, setSelectedAvailableTriggerId] =
+    useState<string>("");
   const [selectedTriggerId, setSelectedTriggerId] = useState<string>("");
-  const [selectedAvailableWorkflowId, setSelectedAvailableWorkflowId] = useState<string>("");
+  const [selectedAvailableWorkflowId, setSelectedAvailableWorkflowId] =
+    useState<string>("");
   const [selectedWorkflowIds, setSelectedWorkflowIds] = useState<string[]>([]);
   const [zapName, setZapName] = useState<string>("");
   const [zapDescription, setZapDescription] = useState<string>("");
@@ -126,40 +127,43 @@ export function CreateZapForm({
                 onValueChange={handleSelectAvailableTrigger}
                 className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4"
               >
-                {triggersData?.triggers.map((availableTrigger: AvailableTrigger) => (
-                  <div key={availableTrigger.id} className="relative">
-                    <RadioGroupItem
-                      value={availableTrigger.id}
-                      id={availableTrigger.id}
-                      className="sr-only"
-                    />
-                    <Label
-                      htmlFor={availableTrigger.id}
-                      className={`flex items-center gap-3 p-4 rounded-md border cursor-pointer transition-colors ${
-                        selectedAvailableTriggerId === availableTrigger.id
-                          ? "border-primary bg-primary/5"
-                          : "border-border hover:border-primary/50"
-                      }`}
-                    >
-                      <div className="w-10 h-10 flex items-center justify-center rounded-md bg-primary/10">
-                        <img
-                          src={availableTrigger.image}
-                          alt={availableTrigger.name}
-                          className="w-6 h-6"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium">{availableTrigger.name}</p>
-                        {availableTrigger.subType && (
-                          <p className="text-sm text-muted-foreground">
-                            {availableTrigger.subType}
-                          </p>
-                        )}
-                      </div>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                    </Label>
-                  </div>
-                ))}
+                {triggersData?.triggers.map(
+                  (availableTrigger: AvailableTrigger) => (
+                    <div key={availableTrigger.id} className="relative">
+                      <RadioGroupItem
+                        value={availableTrigger.id}
+                        id={availableTrigger.id}
+                        className="sr-only"
+                      />
+                      <Label
+                        htmlFor={availableTrigger.id}
+                        className={`flex items-center gap-3 p-4 rounded-md border cursor-pointer transition-colors ${
+                          selectedAvailableTriggerId === availableTrigger.id
+                            ? "border-primary bg-primary/5"
+                            : "border-border hover:border-primary/50"
+                        }`}
+                      >
+                        <div className="w-10 h-10 flex items-center justify-center rounded-md bg-primary/10">
+                          <img
+                            src={availableTrigger.image}
+                            alt={availableTrigger.name}
+                            className="w-6 h-6"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium">{availableTrigger.name}</p>
+
+                          {availableTrigger.subType && (
+                            <p className="text-sm text-muted-foreground">
+                              {availableTrigger.subType}
+                            </p>
+                          )}
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                      </Label>
+                    </div>
+                  )
+                )}
               </RadioGroup>
             )}
           </div>
@@ -169,12 +173,13 @@ export function CreateZapForm({
         const selectedAvailableTrigger = triggersData?.triggers.find(
           (t) => t.id === selectedAvailableTriggerId
         );
-        
+
         return (
           <div className="space-y-4">
             <h2 className="text-lg font-medium">Choose a Specific Trigger</h2>
             <p className="text-sm text-muted-foreground">
-              Select the specific trigger event from {selectedAvailableTrigger?.name}
+              Select the specific trigger event from{" "}
+              {selectedAvailableTrigger?.name}
             </p>
 
             {!selectedAvailableTrigger ? (
@@ -210,12 +215,17 @@ export function CreateZapForm({
                         />
                       </div>
                       <div>
-                        <p className="font-medium">{trigger.id}</p>
-                        {trigger.metaData && (
-                          <p className="text-sm text-muted-foreground">
-                            {JSON.stringify(trigger.metaData)}
-                          </p>
-                        )}
+                        <p className="font-medium">
+                          {trigger.metaData && (
+                            <span className="text-xl text-muted-foreground">
+                              {(trigger.metaData)["subType"]}
+                            </span>
+                          )}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {trigger.id}
+                        </p>
+                        
                       </div>
                     </Label>
                   </div>
@@ -243,40 +253,44 @@ export function CreateZapForm({
                 onValueChange={handleSelectAvailableWorkflow}
                 className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4"
               >
-                {workflowsData?.workflows.map((availableWorkflow: AvailableWorkflow) => (
-                  <div key={availableWorkflow.id} className="relative">
-                    <RadioGroupItem
-                      value={availableWorkflow.id}
-                      id={availableWorkflow.id}
-                      className="sr-only"
-                    />
-                    <Label
-                      htmlFor={availableWorkflow.id}
-                      className={`flex items-center gap-3 p-4 rounded-md border cursor-pointer transition-colors ${
-                        selectedAvailableWorkflowId === availableWorkflow.id
-                          ? "border-primary bg-primary/5"
-                          : "border-border hover:border-primary/50"
-                      }`}
-                    >
-                      <div className="w-10 h-10 flex items-center justify-center rounded-md bg-primary/10">
-                        <img
-                          src={availableWorkflow.image}
-                          alt={availableWorkflow.name}
-                          className="w-6 h-6"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium">{availableWorkflow.name}</p>
-                        {availableWorkflow.subType && (
-                          <p className="text-sm text-muted-foreground">
-                            {availableWorkflow.subType}
+                {workflowsData?.workflows.map(
+                  (availableWorkflow: AvailableWorkflow) => (
+                    <div key={availableWorkflow.id} className="relative">
+                      <RadioGroupItem
+                        value={availableWorkflow.id}
+                        id={availableWorkflow.id}
+                        className="sr-only"
+                      />
+                      <Label
+                        htmlFor={availableWorkflow.id}
+                        className={`flex items-center gap-3 p-4 rounded-md border cursor-pointer transition-colors ${
+                          selectedAvailableWorkflowId === availableWorkflow.id
+                            ? "border-primary bg-primary/5"
+                            : "border-border hover:border-primary/50"
+                        }`}
+                      >
+                        <div className="w-10 h-10 flex items-center justify-center rounded-md bg-primary/10">
+                          <img
+                            src={availableWorkflow.image}
+                            alt={availableWorkflow.name}
+                            className="w-6 h-6"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium">
+                            {availableWorkflow.name}
                           </p>
-                        )}
-                      </div>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                    </Label>
-                  </div>
-                ))}
+                          {availableWorkflow.subType && (
+                            <p className="text-sm text-muted-foreground">
+                              {availableWorkflow.subType}
+                            </p>
+                          )}
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                      </Label>
+                    </div>
+                  )
+                )}
               </RadioGroup>
             )}
           </div>
@@ -286,12 +300,13 @@ export function CreateZapForm({
         const selectedAvailableWorkflow = workflowsData?.workflows.find(
           (w) => w.id === selectedAvailableWorkflowId
         );
-        
+
         return (
           <div className="space-y-4">
             <h2 className="text-lg font-medium">Choose Specific Workflows</h2>
             <p className="text-sm text-muted-foreground">
-              Select one or more workflows from {selectedAvailableWorkflow?.name}
+              Select one or more workflows from{" "}
+              {selectedAvailableWorkflow?.name}
             </p>
 
             {!selectedAvailableWorkflow ? (
@@ -371,21 +386,25 @@ export function CreateZapForm({
         );
 
       case ZapCreationStep.CONFIRMATION:
-        const selectedAvailableTriggerForConfirmation = triggersData?.triggers.find(
-          (t) => t.id === selectedAvailableTriggerId
-        );
-        
-        const selectedTriggerForConfirmation = selectedAvailableTriggerForConfirmation?.triggers.find(
-          (t) => t.id === selectedTriggerId
-        );
-        
-        const selectedAvailableWorkflowForConfirmation = workflowsData?.workflows.find(
-          (w) => w.id === selectedAvailableWorkflowId
-        );
-        
-        const selectedWorkflowsForConfirmation = selectedAvailableWorkflowForConfirmation?.workflows.filter(
-          (w) => selectedWorkflowIds.includes(w.id)
-        );
+        const selectedAvailableTriggerForConfirmation =
+          triggersData?.triggers.find(
+            (t) => t.id === selectedAvailableTriggerId
+          );
+
+        const selectedTriggerForConfirmation =
+          selectedAvailableTriggerForConfirmation?.triggers.find(
+            (t) => t.id === selectedTriggerId
+          );
+
+        const selectedAvailableWorkflowForConfirmation =
+          workflowsData?.workflows.find(
+            (w) => w.id === selectedAvailableWorkflowId
+          );
+
+        const selectedWorkflowsForConfirmation =
+          selectedAvailableWorkflowForConfirmation?.workflow.filter((w) =>
+            selectedWorkflowIds.includes(w.id)
+          );
 
         return (
           <div className="space-y-4">
@@ -467,9 +486,9 @@ export function CreateZapForm({
                   Selected Workflows
                 </p>
                 <div className="space-y-2 mt-1">
-                  {selectedWorkflowsForConfirmation?.map((workflow) => (
-                    <div key={workflow.id} className="flex items-center gap-2">
-                      <p>{workflow.id}</p>
+                  {selectedWorkflowsForConfirmation?.map((workflow1: any) => (
+                    <div key={workflow1.id} className="flex items-center gap-2">
+                      <p>{workflow1.id}</p>
                     </div>
                   ))}
                 </div>
