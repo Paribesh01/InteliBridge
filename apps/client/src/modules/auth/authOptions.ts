@@ -3,6 +3,7 @@ import { compare } from "bcryptjs";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import jwt from "jsonwebtoken";
+import Email from "next-auth/providers/email";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -41,13 +42,16 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Invalid credentials");
         }
         const isValid = await compare(credentials.password, user.password);
-        
+
         if (!isValid) {
           throw new Error("Invalid credentials");
         }
 
-        const { password, ...userWithoutPassword } = user;
-
+        const userWithoutPassword = {
+          userId: user.id,
+          email: user.email,
+          name: user.name,
+        };
         const token = jwt.sign(
           userWithoutPassword,
           process.env.NEXTAUTH_SECRET as string
@@ -67,7 +71,6 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-
     async jwt({ token, user }: any) {
       if (user) {
         token.id = user.id;
@@ -75,23 +78,19 @@ export const authOptions: NextAuthOptions = {
         token.email = user.email;
 
         token.jwtToken = user.jwtToken;
-
       }
-      
+
       return token;
     },
     async session({ session, token }: any) {
-
       if (session.user) {
         session.user.id = token.id;
         session.user.name = token.name;
         session.user.email = token.email;
 
         session.user.jwtToken = token.jwtToken;
-
       }
 
-      
       return session;
     },
   },

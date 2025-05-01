@@ -24,9 +24,11 @@ export const GetAllZap = async (req: Request, res: Response) => {
   }
 };
 
-export const getAllZapsWithPagination = async (req: Request, res: Response):Promise<any> => {
+export const getAllZapsWithPagination = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   try {
-
     const userId = req.user?.userId;
     const url = new URL(req.url);
     const cursor = url.searchParams.get("cursor");
@@ -299,7 +301,7 @@ export const getWorkflowDetails = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteZap = async (req: Request, res: Response):Promise<any> => {
+export const deleteZap = async (req: Request, res: Response): Promise<any> => {
   try {
     const userId = req.user?.userId;
     const zapId = req.params.id;

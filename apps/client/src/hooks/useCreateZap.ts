@@ -7,9 +7,6 @@ import { useSession } from "next-auth/react";
 
 interface CreateZapInput {
   name: string;
-  description?: string;
-  triggerId: string;
-  workflowIds: string[];
 }
 
 export function useCreateZap() {
@@ -22,7 +19,7 @@ export function useCreateZap() {
         throw new Error("Unauthorized: No valid session");
       }
 
-      const accessToken = session?.accessToken;
+      const accessToken = session?.user.jwtToken;
       if (!accessToken) {
         throw new Error("Unauthorized: No access token available");
       }
@@ -37,7 +34,7 @@ export function useCreateZap() {
 
         return response.data as Zap;
       } catch (error) {
-        console.log(error)
+        console.log(error);
         throw new Error("Failed to create zap");
       }
     },
