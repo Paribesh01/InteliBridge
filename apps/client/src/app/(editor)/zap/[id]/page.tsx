@@ -53,6 +53,7 @@ export default function ZapPage({ params }: PageProps) {
       >
         {showSidebar && (
           <SidebarConfig
+            zapId={id}
             type={"trigger"}
             onClose={() => {}}
             onBack={() => {}}

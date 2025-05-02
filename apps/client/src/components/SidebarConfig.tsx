@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Search, X, ArrowLeft, Check, Loader2 } from "lucide-react";
+
+import { X, ArrowLeft, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
+import StepAppSelect from "./sidebarConfigSteps/StepAppSelect";
 
 interface SidebarConfigProps {
   type: "trigger" | "action";
@@ -12,9 +12,10 @@ interface SidebarConfigProps {
   onBack?: () => void;
   step?: number;
   onComplete?: (data: any) => void;
+  zapId: string;
 }
 
-interface AppOption {
+export interface AppOption {
   id: string;
   name: string;
   icon: string;
@@ -62,20 +63,17 @@ const SidebarConfig: React.FC<SidebarConfigProps> = ({
   onBack,
   step = 1,
   onComplete,
+  zapId,
 }) => {
   const [selectedApp, setSelectedApp] = useState<AppOption | null>(null);
   const [selectedAction, setSelectedAction] = useState<ActionOption | null>(
     null
   );
-  const [searchTerm, setSearchTerm] = useState("");
+
   const [connecting, setConnecting] = useState(false);
   const [connected, setConnected] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testSuccess, setTestSuccess] = useState(false);
-
-  const filteredApps = mockApps.filter((app) =>
-    app.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const handleStepBackward = () => {
     if (step === 2 && selectedApp) {
@@ -84,13 +82,6 @@ const SidebarConfig: React.FC<SidebarConfigProps> = ({
     } else if (step === 1) {
       setSelectedApp(null);
       onClose();
-    }
-  };
-
-  const handleAppSelect = (app: AppOption) => {
-    setSelectedApp(app);
-    if (step === 1) {
-      onComplete?.({ app });
     }
   };
 
@@ -131,65 +122,9 @@ const SidebarConfig: React.FC<SidebarConfigProps> = ({
   // Render step content based on current step
   const renderStepContent = () => {
     switch (step) {
-      case 1: // App Selection
+      case 1:
         return (
-          <div className="animate-fade-in">
-            <div className="mb-4">
-              <h2 className="text-lg font-medium">Select an App</h2>
-              <p className="text-sm text-gray-500">
-                Choose an app to {type === "trigger" ? "trigger" : "perform"}{" "}
-                your automation
-              </p>
-            </div>
-
-            <div className="relative mb-4">
-              <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                size={16}
-              />
-              <Input
-                placeholder="Search apps..."
-                className="pl-10"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-
-            <Tabs defaultValue="all" className="mb-4">
-              <TabsList className="mb-4">
-                <TabsTrigger value="all">All Apps</TabsTrigger>
-                <TabsTrigger value="connected">Connected</TabsTrigger>
-                <TabsTrigger value="popular">Popular</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="all" className="m-0">
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {filteredApps.map((app) => (
-                    <div
-                      key={app.id}
-                      className={cn(
-                        "flex flex-col items-center p-3 rounded-md cursor-pointer border transition-all hover:shadow-sm",
-                        selectedApp?.id === app.id
-                          ? "border-primary"
-                          : "border-gray-200"
-                      )}
-                      onClick={() => handleAppSelect(app)}
-                    >
-                      <div
-                        className={cn(
-                          "w-10 h-10 rounded-md flex items-center justify-center text-white font-bold mb-2",
-                          app.color
-                        )}
-                      >
-                        {app.icon}
-                      </div>
-                      <span className="text-sm">{app.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
+          <StepAppSelect zapId={zapId} type={type} selectedApp={selectedApp} />
         );
 
       case 2: // Action/Trigger Selection
@@ -291,7 +226,7 @@ const SidebarConfig: React.FC<SidebarConfigProps> = ({
           </div>
         );
 
-      case 4: // Configure Options
+      case 4:
         return (
           <div className="animate-fade-in">
             <div className="mb-6">
@@ -301,7 +236,6 @@ const SidebarConfig: React.FC<SidebarConfigProps> = ({
               </p>
             </div>
 
-            {/* Example form fields that would change based on the selected app/action */}
             <div className="space-y-4 mb-6">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Channel</label>
