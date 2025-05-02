@@ -33,12 +33,9 @@ export const getAllZapsWithPagination = async (
   res: Response
 ): Promise<any> => {
   try {
-
-
-    const userId = req.user?.userId; 
+    const userId = req.user?.userId;
     const cursor = req.query.cursor as string | undefined;
     const limit = parseInt((req.query.limit as string) || "10", 10);
-
 
     const zaps = await prisma.zap.findMany({
       where: { userId },
@@ -51,12 +48,10 @@ export const getAllZapsWithPagination = async (
           },
         },
         workflows: {
-          
           include: {
-            
             type: true,
           },
-          
+
           orderBy: {
             index: "asc",
           },
@@ -148,17 +143,9 @@ interface CreateZapInput {
 }
 
 export const createZap = async (req: Request, res: Response) => {
-  const { name, description, triggerId, workflowIds }: CreateZapInput =
-    req.body;
+  const { name, description } = req.body;
 
-  const user = req.user;
-
-  console.log("===No User", user);
-
-  if (!user) {
-    res.status(401).json({ error: "Unauthorized" });
-    return;
-  }
+  const userId = req.user?.userId;
 
   try {
     if (!name) {
@@ -166,55 +153,11 @@ export const createZap = async (req: Request, res: Response) => {
       return;
     }
 
-    if (!req.user?.id) {
-      res.status(401).send("Unauthorized");
-      return;
-    }
-
-    console.log(name, description, triggerId, workflowIds);
-
-    const trigger_data = await prisma.trigger.findUniqueOrThrow({
-      where: {
-        id: triggerId,
-      },
-    });
-
-    if (!trigger_data) {
-      console.log("Trigger Not found");
-      res.status(404).json({
-        error: "Trigger not found",
-      });
-      return;
-    }
-
-    console.log("Trigger Found");
-
-    const workflows = workflowIds.map((workflowId) => ({
-      id: workflowId,
-    }));
-
-    if (!workflows) {
-      res.status(404).json({
-        error: "wrokflows not found",
-      });
-      return;
-    }
-
-    console.log("workflow found");
-
     const zap = await prisma.zap.create({
       data: {
         name,
-        userId: req.user.id,
+        userId,
         description,
-        trigger: {
-          connect: {
-            id: trigger_data.id,
-          },
-        },
-        workflows: {
-          connect: workflows,
-        },
       },
     });
 
