@@ -16,13 +16,13 @@ export function useZap(id: string) {
       if (!accessToken)
         throw new Error("Unauthorized: No access token available");
 
-      const response = await api.get(`/zap/${id}`, {
+      const response: any = await api.get(`/zap/${id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
 
-      return response.data as Zap;
+      return response.data.zap as Zap;
     },
     enabled: !!id && !!session,
   });

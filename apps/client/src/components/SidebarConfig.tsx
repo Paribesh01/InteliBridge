@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import StepAppSelect from "./sidebarConfigSteps/StepAppSelect";
 
 interface SidebarConfigProps {
-  type: "trigger" | "action";
+  type: "trigger" | "workflow";
   onClose: () => void;
   onBack?: () => void;
   step?: number;

@@ -45,6 +45,7 @@ export function ZapCard({ zap }: ZapCardProps) {
 
   // Add this function to handle card click
   const handleCardClick = () => {
+    console.log("this is goiunh yo redirect", zap.id);
     router.push(`/zap/${zap.id}`);
   };
 

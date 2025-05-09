@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ZapList } from "@/components/zap-list";
 import { WorkflowList } from "@/components/workflow-list";
-    
+
 export function DashboardTabs() {
   const [activeTab, setActiveTab] = useState<"zaps" | "workflows">("zaps");
 
@@ -33,10 +33,11 @@ export function DashboardTabs() {
             Workflows
           </button>
         </div>
+        ``
       </div>
 
       {/* Tab content */}
       {activeTab === "zaps" ? <ZapList /> : <WorkflowList />}
     </div>
   );
-} 
+}
