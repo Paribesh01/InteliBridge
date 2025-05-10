@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useGetSubZap } from "@/hooks/useSubZap";
 
 interface StepActionSelectProps {
   type: "trigger" | "workflow";
@@ -24,30 +25,10 @@ const ActionSelectSchema = z.object({
 
 type ActionSelectFormData = z.infer<typeof ActionSelectSchema>;
 
-// This would typically come from your API/backend
-const mockActions: ActionOption[] = [
-  {
-    id: "new-message",
-    name: "New Message",
-    description: "Triggers when a new message is posted in a channel",
-  },
-  {
-    id: "user-joins",
-    name: "User Joins",
-    description: "Triggers when a new user joins the server",
-  },
-  {
-    id: "reaction-added",
-    name: "Reaction Added",
-    description: "Triggers when a reaction is added to a message",
-  },
-];
-
 const StepActionSelect: React.FC<StepActionSelectProps> = ({
   type,
   onComplete,
   selectedAppId,
-  zapId,
 }) => {
   const form = useForm<ActionSelectFormData>({
     resolver: zodResolver(ActionSelectSchema),
@@ -57,8 +38,22 @@ const StepActionSelect: React.FC<StepActionSelectProps> = ({
     mode: "onChange",
   });
 
-  const handleActionSelect = (action: ActionOption) => {
-    form.setValue("selectedActionId", action.id, { shouldValidate: true });
+  const { getSub, data: actions, isPending, error } = useGetSubZap();
+
+  useEffect(() => {
+    if (selectedAppId) {
+      getSub(selectedAppId);
+    }
+  }, [selectedAppId, getSub]);
+
+  useEffect(() => {
+    console.log("actions", actions);
+  }, [actions]);
+
+  const subActions: any = actions?.subTypes ?? [];
+
+  const handleActionSelect = (action: any) => {
+    form.setValue("selectedActionId", action, { shouldValidate: true });
   };
 
   const onSubmit = async (data: ActionSelectFormData) => {
@@ -90,18 +85,22 @@ const StepActionSelect: React.FC<StepActionSelectProps> = ({
           </div>
 
           <div className="space-y-2">
-            {mockActions.map((action) => (
+            {isPending && <div>Loading actions...</div>}
+            {error && (
+              <div className="text-red-500">Failed to load actions.</div>
+            )}
+            {subActions.map((action: any) => (
               <div
                 key={action.id}
                 className={cn(
                   "p-3 border rounded-md cursor-pointer transition-all hover:border-primary",
-                  form.watch("selectedActionId") === action.id
+                  form.watch("selectedActionId") === action
                     ? "border-primary bg-primary/5"
                     : "border-gray-200"
                 )}
                 onClick={() => handleActionSelect(action)}
               >
-                <h3 className="font-medium">{action.name}</h3>
+                <h3 className="font-medium">{action}</h3>
                 <p className="text-sm text-gray-500">{action.description}</p>
               </div>
             ))}

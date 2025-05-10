@@ -1,42 +1,39 @@
-import express, { Request, Response } from "express"
-import { appRegistry } from "../apps/file/app"
-import { getSubTrigger } from "../helpers/getsubTriggers"
-import { getSubWorkflows } from "../helpers/getsubWorkflows"
+import express, { Request, Response } from "express";
+import { appRegistry } from "../apps/file/app";
+import { getSubTrigger } from "../helpers/getsubTriggers";
+import { getSubWorkflows } from "../helpers/getsubWorkflows";
+import prisma from "../db";
 
+export const giveSub = async (req: Request, res: Response) => {
+  const { id } = req.params;
 
+  try {
+    const trigger = await prisma.trigger.findUniqueOrThrow({
+      where: { id },
+      select: {
+        type: true,
+      },
+    });
 
+    if (!trigger) {
+      const workflow = await prisma.workflow.findUniqueOrThrow({
+        where: { id },
+        select: {
+          type: true,
+        },
+      });
 
-export const giveSubTriggers = async(req:Request,res:Response)=>{
-
-    const {app} = req.params
-
-    try{
-        const data = await getSubTrigger(app as string)
-        if(!data){
-            res.send("app is not there")
-            console.log("app is not there")
-        }
-        console.log("this is for trigger",data)
-        res.json(data)
-
-    }catch(e){
-        console.log("error while giving a subtrigger")
-        res.send("internel server error")
+      if (!workflow) {
+        res.status(404).json({ message: "app not found" });
+      }
+      const data = await getSubWorkflows(workflow.type.name);
+      res.json(data);
+    } else {
+      const data = await getSubTrigger(trigger.type.name);
+      res.json(data);
     }
-
-}
-
-export const giveSubWokflows =async (req:Request,res:Response)=>{
-    const {app} = req.params
-    try{
-
-        const data = await getSubWorkflows(app as string)
-        console.log("this is for workflow",data)
-
-        res.json(data)
-
-    }catch(e){
-        console.log("error while giving a subtrigger")
-        res.send("internel server error")
-    }
-}
+  } catch (e) {
+    console.log("error while giving a subtrigger");
+    res.send("internel server error");
+  }
+};
