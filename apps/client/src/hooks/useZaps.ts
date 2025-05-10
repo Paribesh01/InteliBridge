@@ -14,11 +14,9 @@ interface ZapsResponse {
 export function useZaps(limit: number = 10) {
   const { data: session } = useSession();
 
-
   return useInfiniteQuery<ZapsResponse>({
     queryKey: ["zaps"],
     queryFn: async ({ pageParam }) => {
-
       if (!session) {
         throw new Error("Unauthorized: No valid session");
       }
@@ -38,7 +36,7 @@ export function useZaps(limit: number = 10) {
         throw new Error("Failed to fetch zaps");
       }
 
-      console.log(response.data)
+      console.log(response.data);
 
       return response.data as ZapsResponse;
     },

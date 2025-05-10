@@ -1,4 +1,4 @@
-export type ZapStatus = 'active' | 'inactive' | 'failed';
+export type ZapStatus = "active" | "inactive" | "failed";
 
 export interface Zap {
   id: string;
@@ -20,6 +20,7 @@ export interface Trigger {
   zapId: string;
   set: boolean;
   type: AvailableTrigger;
+  done: boolean;
 }
 
 export interface Workflow {
@@ -31,6 +32,7 @@ export interface Workflow {
   metaData?: any;
   index: number;
   type: AvailableWorkflow;
+  done: boolean;
 }
 
 export interface AvailableTrigger {
@@ -38,7 +40,7 @@ export interface AvailableTrigger {
   name: string;
   image: string;
   subType?: string | null;
-  triggers : Trigger[];
+  triggers: Trigger[];
 }
 
 export interface AvailableWorkflow {
@@ -46,5 +48,5 @@ export interface AvailableWorkflow {
   name: string;
   image: string;
   subType?: string | null;
-  workflow:Workflow[]
-} 
+  workflow: Workflow[];
+}

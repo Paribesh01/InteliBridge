@@ -3,7 +3,6 @@ import { compare } from "bcryptjs";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import jwt from "jsonwebtoken";
-import Email from "next-auth/providers/email";
 
 export const authOptions: NextAuthOptions = {
   providers: [

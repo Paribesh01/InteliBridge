@@ -48,7 +48,7 @@ model Trigger {
   zap         Zap      @relation(fields: [zapId], references: [id])
   set Boolean @default(false)
   type AvailableTrigger @relation(fields: [triggerId], references: [id])
-
+  done Boolean @default(false)
 }
 
 model Workflow {
@@ -61,6 +61,7 @@ model Workflow {
   zap         Zap      @relation(fields: [zapId], references: [id])
   index       Int @default(0)
   type AvailableWorkflow @relation(fields: [workflowId],references: [id])
+  done Boolean @default(false)
 
 
 }
