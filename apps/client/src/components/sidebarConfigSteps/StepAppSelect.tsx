@@ -6,13 +6,13 @@ import { toast } from "sonner";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { AppOption } from "../SidebarConfig";
+
 import { useTriggers, useUpdateZapTrigger } from "@/hooks/useTriggers";
 
 interface StepAppSelectProps {
-  type: "trigger" | "action";
-
-  selectedApp: AppOption | null;
+  type: "trigger" | "workflow";
+  onComplete: () => void;
+  selectedId: string | null;
   zapId: string;
 }
 
@@ -24,8 +24,9 @@ type AppSelectFormData = z.infer<typeof AppSelectSchema>;
 
 const StepAppSelect: React.FC<StepAppSelectProps> = ({
   type,
-  selectedApp,
+  selectedId,
   zapId,
+  onComplete,
 }) => {
   const { data, isLoading, error } = useTriggers();
   const updateZapTrigger = useUpdateZapTrigger();
@@ -35,7 +36,7 @@ const StepAppSelect: React.FC<StepAppSelectProps> = ({
   const form = useForm<AppSelectFormData>({
     resolver: zodResolver(AppSelectSchema),
     defaultValues: {
-      selectedAppId: selectedApp?.id || "",
+      selectedAppId: selectedId || "",
     },
     mode: "onChange",
   });
@@ -51,6 +52,7 @@ const StepAppSelect: React.FC<StepAppSelectProps> = ({
         id: zapId,
         triggerId: data.selectedAppId,
       });
+      onComplete();
       toast.success("App selected successfully!");
     } catch (error: any) {
       toast.error(error?.message || "Failed to select app.");
