@@ -17,6 +17,7 @@ export default function ZapPage({ params }: PageProps) {
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
   const [step, setStep] = useState<number>(1);
   const { id } = params;
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   if (!id) {
     notFound();
@@ -57,29 +58,25 @@ export default function ZapPage({ params }: PageProps) {
       </div>
 
       {/* Show trigger information if it exists */}
-      {zap?.trigger ? (
-        <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+      {zap?.trigger && (
+        <div
+          className="bg-white border border-gray-200 rounded-lg p-6 mb-6 cursor-pointer"
+          onClick={() => {
+            setSelectedId(zap?.trigger?.id || null);
+            setShowSidebar(true);
+          }}
+        >
           <h3 className="font-medium text-gray-700 mb-2">Trigger</h3>
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-500">Type:</span>
             <span className="text-sm font-medium">{zap.trigger.type.name}</span>
           </div>
         </div>
-      ) : (
-        // Show trigger setup if no trigger exists
-        <div className="bg-white border border-dashed border-gray-300 rounded-lg p-6 text-center mb-6">
-          <h3 className="font-medium text-gray-700 mb-2">
-            Start with a Trigger
-          </h3>
-          <p className="text-sm text-gray-500 mb-4">
-            Select an app to trigger your workflow
-          </p>
-          <Button onClick={handleSetTrigger}>Set Trigger</Button>
-        </div>
       )}
 
       {/* Show workflows if trigger exists */}
-      {zap?.trigger && (
+
+      {zap?.trigger ? (
         <>
           {zap.workflows && zap.workflows.length > 0 ? (
             <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
@@ -93,7 +90,10 @@ export default function ZapPage({ params }: PageProps) {
                     title={"this is the workflow title"}
                     description={"this is the workflow description"}
                     status={workflow.done ? "complete" : "incomplete"}
-                    onClick={() => setShowSidebar(true)}
+                    onClick={() => {
+                      setSelectedId(workflow.id);
+                      setShowSidebar(true);
+                    }}
                     onAddAction={() => {
                       console.log("add action");
                     }}
@@ -115,6 +115,14 @@ export default function ZapPage({ params }: PageProps) {
             </div>
           )}
         </>
+      ) : (
+        <div className="bg-white border border-dashed border-gray-300 rounded-lg p-6 text-center mb-6">
+          <h3 className="font-medium text-gray-700 mb-2">Add Your Trigger</h3>
+          <p className="text-sm text-gray-500 mb-4">
+            Select an app to add an action to your workflow
+          </p>
+          <Button onClick={() => setShowSidebar(true)}>Add Trigger</Button>
+        </div>
       )}
 
       {/* Sidebar */}
@@ -125,12 +133,20 @@ export default function ZapPage({ params }: PageProps) {
           <SidebarConfig
             zapId={id}
             type={zap?.trigger ? "workflow" : "trigger"}
-            onClose={() => setShowSidebar(false)}
-            onBack={() => setShowSidebar(false)}
+            selectedId={selectedId}
+            onClose={() => {
+              setShowSidebar(false);
+              setSelectedId(null);
+            }}
+            onBack={() => {
+              setShowSidebar(false);
+              setSelectedId(null);
+            }}
             step={step}
             onComplete={() => {
               setStep(step + 1);
               setShowSidebar(false);
+              setSelectedId(null);
             }}
           />
         )}

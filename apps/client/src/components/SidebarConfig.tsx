@@ -5,14 +5,16 @@ import { X, ArrowLeft, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import StepAppSelect from "./sidebarConfigSteps/StepAppSelect";
+import StepActionSelect from "./sidebarConfigSteps/StepActionSelect";
 
 interface SidebarConfigProps {
   type: "trigger" | "workflow";
   onClose: () => void;
   onBack?: () => void;
   step?: number;
-  onComplete?: (data: any) => void;
+  onComplete?: () => void;
   zapId: string;
+  selectedId?: string | null;
 }
 
 export interface AppOption {
@@ -64,8 +66,8 @@ const SidebarConfig: React.FC<SidebarConfigProps> = ({
   step = 1,
   onComplete,
   zapId,
+  selectedId,
 }) => {
-  const [selectedApp, setSelectedApp] = useState<AppOption | null>(null);
   const [selectedAction, setSelectedAction] = useState<ActionOption | null>(
     null
   );
@@ -75,20 +77,12 @@ const SidebarConfig: React.FC<SidebarConfigProps> = ({
   const [testing, setTesting] = useState(false);
   const [testSuccess, setTestSuccess] = useState(false);
 
-  const handleStepBackward = () => {
-    if (step === 2 && selectedApp) {
-      setSelectedAction(null);
-      onBack?.();
-    } else if (step === 1) {
-      setSelectedApp(null);
-      onClose();
-    }
-  };
+  const handleStepBackward = () => {};
 
   const handleActionSelect = (action: ActionOption) => {
     setSelectedAction(action);
     if (step === 2) {
-      onComplete?.({ action });
+      onComplete?.();
     }
   };
 
@@ -111,234 +105,221 @@ const SidebarConfig: React.FC<SidebarConfigProps> = ({
   };
 
   const handleSaveConfig = () => {
-    onComplete?.({
-      app: selectedApp,
-      action: selectedAction,
-      config: { configured: true },
-    });
+    // onComplete?.({
+    //   app: selectedApp,
+    //   action: selectedAction,
+    //   config: { configured: true },
+    // });
     onClose();
   };
 
   // Render step content based on current step
   const renderStepContent = () => {
+    console.log("step", step);
     switch (step) {
       case 1:
         return (
-          <StepAppSelect zapId={zapId} type={type} selectedApp={selectedApp} />
+          <StepAppSelect
+            zapId={zapId}
+            onComplete={() => {
+              onComplete?.();
+            }}
+            type={type}
+            selectedId={selectedId || null}
+          />
         );
 
-      case 2: // Action/Trigger Selection
-        if (!selectedApp) return null;
+      case 2:
+        if (!selectedId) return null;
 
         return (
-          <div className="animate-fade-in">
-            <div className="mb-4">
-              <h2 className="text-lg font-medium">
-                Select a {type === "trigger" ? "Trigger" : "Action"}
-              </h2>
-              <p className="text-sm text-gray-500">
-                Choose how {selectedApp.name} will{" "}
-                {type === "trigger" ? "trigger" : "perform"} your automation
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              {discordActions.map((action) => (
-                <div
-                  key={action.id}
-                  className={cn(
-                    "p-3 border rounded-md cursor-pointer transition-all hover:border-primary",
-                    selectedAction?.id === action.id
-                      ? "border-primary bg-primary/5"
-                      : "border-gray-200"
-                  )}
-                  onClick={() => handleActionSelect(action)}
-                >
-                  <h3 className="font-medium">{action.name}</h3>
-                  <p className="text-sm text-gray-500">{action.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+          <StepActionSelect
+            type={type}
+            onComplete={() => {
+              onComplete?.();
+            }}
+            selectedAppId={selectedId}
+            zapId={zapId}
+          />
         );
 
-      case 3: // Account Connection
-        return (
-          <div className="animate-fade-in">
-            <div className="mb-6">
-              <h2 className="text-lg font-medium">Connect Account</h2>
-              <p className="text-sm text-gray-500">
-                Connect your {selectedApp?.name} account to continue
-              </p>
-            </div>
+      // case 3: // Account Connection
+      //   return (
+      //     <div className="animate-fade-in">
+      //       <div className="mb-6">
+      //         <h2 className="text-lg font-medium">Connect Account</h2>
+      //         <p className="text-sm text-gray-500">
+      //           Connect your {selectedApp?.name} account to continue
+      //         </p>
+      //       </div>
 
-            <div className="p-4 border rounded-md mb-6">
-              <div className="flex items-center gap-3 mb-3">
-                {selectedApp && (
-                  <div
-                    className={cn(
-                      "w-10 h-10 rounded-md flex items-center justify-center text-white font-bold",
-                      selectedApp.color
-                    )}
-                  >
-                    {selectedApp.icon}
-                  </div>
-                )}
-                <div>
-                  <h3 className="font-medium">{selectedApp?.name}</h3>
-                  <p className="text-xs text-gray-500">OAuth Connection</p>
-                </div>
-              </div>
+      //       <div className="p-4 border rounded-md mb-6">
+      //         <div className="flex items-center gap-3 mb-3">
+      //           {selectedApp && (
+      //             <div
+      //               className={cn(
+      //                 "w-10 h-10 rounded-md flex items-center justify-center text-white font-bold",
+      //                 selectedApp.color
+      //               )}
+      //             >
+      //               {selectedApp.icon}
+      //             </div>
+      //           )}
+      //           <div>
+      //             <h3 className="font-medium">{selectedApp?.name}</h3>
+      //             <p className="text-xs text-gray-500">OAuth Connection</p>
+      //           </div>
+      //         </div>
 
-              {!connected ? (
-                <Button
-                  onClick={handleConnect}
-                  className="w-full"
-                  disabled={connecting}
-                >
-                  {connecting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Connecting...
-                    </>
-                  ) : (
-                    <>Connect {selectedApp?.name} Account</>
-                  )}
-                </Button>
-              ) : (
-                <div className="flex items-center gap-2 text-green-600 mt-4">
-                  <Check size={16} />
-                  <span className="text-sm font-medium">
-                    Connected successfully
-                  </span>
-                </div>
-              )}
-            </div>
+      //         {!connected ? (
+      //           <Button
+      //             onClick={handleConnect}
+      //             className="w-full"
+      //             disabled={connecting}
+      //           >
+      //             {connecting ? (
+      //               <>
+      //                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+      //                 Connecting...
+      //               </>
+      //             ) : (
+      //               <>Connect {selectedApp?.name} Account</>
+      //             )}
+      //           </Button>
+      //         ) : (
+      //           <div className="flex items-center gap-2 text-green-600 mt-4">
+      //             <Check size={16} />
+      //             <span className="text-sm font-medium">
+      //               Connected successfully
+      //             </span>
+      //           </div>
+      //         )}
+      //       </div>
 
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={handleStepBackward}>
-                Back
-              </Button>
-              <Button onClick={onComplete} disabled={!connected}>
-                Continue
-              </Button>
-            </div>
-          </div>
-        );
+      //       <div className="flex justify-end gap-2">
+      //         <Button variant="outline" onClick={handleStepBackward}>
+      //           Back
+      //         </Button>
+      //         <Button onClick={onComplete} disabled={!connected}>
+      //           Continue
+      //         </Button>
+      //       </div>
+      //     </div>
+      //   );
 
-      case 4:
-        return (
-          <div className="animate-fade-in">
-            <div className="mb-6">
-              <h2 className="text-lg font-medium">Configure Options</h2>
-              <p className="text-sm text-gray-500">
-                Set up the specific details for this {type}
-              </p>
-            </div>
+      // case 4:
+      //   return (
+      //     <div className="animate-fade-in">
+      //       <div className="mb-6">
+      //         <h2 className="text-lg font-medium">Configure Options</h2>
+      //         <p className="text-sm text-gray-500">
+      //           Set up the specific details for this {type}
+      //         </p>
+      //       </div>
 
-            <div className="space-y-4 mb-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Channel</label>
-                <select className="w-full p-2 border rounded-md">
-                  <option value="">Select a channel</option>
-                  <option value="general">#general</option>
-                  <option value="random">#random</option>
-                  <option value="development">#development</option>
-                </select>
-              </div>
+      //       <div className="space-y-4 mb-6">
+      //         <div className="space-y-2">
+      //           <label className="text-sm font-medium">Channel</label>
+      //           <select className="w-full p-2 border rounded-md">
+      //             <option value="">Select a channel</option>
+      //             <option value="general">#general</option>
+      //             <option value="random">#random</option>
+      //             <option value="development">#development</option>
+      //           </select>
+      //         </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Event Type</label>
-                <select className="w-full p-2 border rounded-md">
-                  <option value="all">All Messages</option>
-                  <option value="mention">Mentions Only</option>
-                  <option value="bot">Bot Messages</option>
-                </select>
-              </div>
-            </div>
+      //         <div className="space-y-2">
+      //           <label className="text-sm font-medium">Event Type</label>
+      //           <select className="w-full p-2 border rounded-md">
+      //             <option value="all">All Messages</option>
+      //             <option value="mention">Mentions Only</option>
+      //             <option value="bot">Bot Messages</option>
+      //           </select>
+      //         </div>
+      //       </div>
 
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={handleStepBackward}>
-                Back
-              </Button>
-              <Button onClick={onComplete}>Continue</Button>
-            </div>
-          </div>
-        );
+      //       <div className="flex justify-end gap-2">
+      //         <Button variant="outline" onClick={handleStepBackward}>
+      //           Back
+      //         </Button>
+      //         <Button onClick={onComplete}>Continue</Button>
+      //       </div>
+      //     </div>
+      //   );
 
-      case 5: // Test
-        return (
-          <div className="animate-fade-in">
-            <div className="mb-6">
-              <h2 className="text-lg font-medium">Test your {type}</h2>
-              <p className="text-sm text-gray-500">
-                Run a quick test to make sure everything works
-              </p>
-            </div>
+      // case 5: // Test
+      //   return (
+      //     <div className="animate-fade-in">
+      //       <div className="mb-6">
+      //         <h2 className="text-lg font-medium">Test your {type}</h2>
+      //         <p className="text-sm text-gray-500">
+      //           Run a quick test to make sure everything works
+      //         </p>
+      //       </div>
 
-            <div className="p-4 border rounded-md mb-6">
-              {!testSuccess ? (
-                <>
-                  <p className="text-sm mb-4">
-                    {type === "trigger"
-                      ? "Testing this trigger will request a sample from Discord to make sure it's working correctly."
-                      : "Testing this action will send a test message to verify it's working correctly."}
-                  </p>
+      //       <div className="p-4 border rounded-md mb-6">
+      //         {!testSuccess ? (
+      //           <>
+      //             <p className="text-sm mb-4">
+      //               {type === "trigger"
+      //                 ? "Testing this trigger will request a sample from Discord to make sure it's working correctly."
+      //                 : "Testing this action will send a test message to verify it's working correctly."}
+      //             </p>
 
-                  <Button
-                    onClick={handleTest}
-                    className="w-full"
-                    disabled={testing}
-                  >
-                    {testing ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Running test...
-                      </>
-                    ) : (
-                      <>Run Test</>
-                    )}
-                  </Button>
-                </>
-              ) : (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-green-600">
-                    <Check size={16} />
-                    <span className="text-sm font-medium">
-                      Test successful!
-                    </span>
-                  </div>
+      //             <Button
+      //               onClick={handleTest}
+      //               className="w-full"
+      //               disabled={testing}
+      //             >
+      //               {testing ? (
+      //                 <>
+      //                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+      //                   Running test...
+      //                 </>
+      //               ) : (
+      //                 <>Run Test</>
+      //               )}
+      //             </Button>
+      //           </>
+      //         ) : (
+      //           <div className="space-y-3">
+      //             <div className="flex items-center gap-2 text-green-600">
+      //               <Check size={16} />
+      //               <span className="text-sm font-medium">
+      //                 Test successful!
+      //               </span>
+      //             </div>
 
-                  <div className="bg-gray-50 p-3 rounded-md">
-                    <h4 className="text-xs font-semibold mb-1">Sample Data:</h4>
-                    <pre className="text-xs overflow-x-auto">
-                      {JSON.stringify(
-                        {
-                          message_id: "123456789",
-                          user: "username#1234",
-                          content: "Hello world!",
-                          channel: "#general",
-                          timestamp: new Date().toISOString(),
-                        },
-                        null,
-                        2
-                      )}
-                    </pre>
-                  </div>
-                </div>
-              )}
-            </div>
+      //             <div className="bg-gray-50 p-3 rounded-md">
+      //               <h4 className="text-xs font-semibold mb-1">Sample Data:</h4>
+      //               <pre className="text-xs overflow-x-auto">
+      //                 {JSON.stringify(
+      //                   {
+      //                     message_id: "123456789",
+      //                     user: "username#1234",
+      //                     content: "Hello world!",
+      //                     channel: "#general",
+      //                     timestamp: new Date().toISOString(),
+      //                   },
+      //                   null,
+      //                   2
+      //                 )}
+      //               </pre>
+      //             </div>
+      //           </div>
+      //         )}
+      //       </div>
 
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={handleStepBackward}>
-                Back
-              </Button>
-              <Button onClick={handleSaveConfig} disabled={!testSuccess}>
-                Save & Continue
-              </Button>
-            </div>
-          </div>
-        );
+      //       <div className="flex justify-end gap-2">
+      //         <Button variant="outline" onClick={handleStepBackward}>
+      //           Back
+      //         </Button>
+      //         <Button onClick={handleSaveConfig} disabled={!testSuccess}>
+      //           Save & Continue
+      //         </Button>
+      //       </div>
+      //     </div>
+      //   );
 
       default:
         return null;
@@ -348,7 +329,7 @@ const SidebarConfig: React.FC<SidebarConfigProps> = ({
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b flex items-center gap-2">
+      {/* <div className="p-4 border-b flex items-center gap-2">
         <Button variant="ghost" size="icon" onClick={handleStepBackward}>
           {step > 1 && selectedApp ? <ArrowLeft size={18} /> : <X size={18} />}
         </Button>
@@ -358,7 +339,7 @@ const SidebarConfig: React.FC<SidebarConfigProps> = ({
             ? `Configure ${type === "trigger" ? "Trigger" : "Action"}`
             : selectedApp?.name}
         </h2>
-      </div>
+      </div> */}
 
       {/* Steps indicator */}
       <div className="px-4 py-3 border-b bg-gray-50">
